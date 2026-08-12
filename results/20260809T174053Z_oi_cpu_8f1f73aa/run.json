@@ -1,0 +1,23 @@
+{
+  "accuracy_reason": "synthetic input is for performance only; no production preprocessing or labels",
+  "accuracy_valid": false,
+  "actual_providers": [
+    "CPUExecutionProvider"
+  ],
+  "available_providers": [
+    "VitisAIExecutionProvider",
+    "CPUExecutionProvider"
+  ],
+  "completed_at": "2026-08-09T17:41:24.909673+00:00",
+  "input_source": "deterministic synthetic tensor",
+  "kind": "oi_model_benchmark",
+  "latency_boundary": "ONNX Runtime session.run only; preprocessing and postprocessing excluded",
+  "model_path": "/home/amd/workspace/jaguar-eval/models/oi/2c07ee086b5450aa/oi.onnx",
+  "npu_verification": null,
+  "power_boundary": "on-board sensors only; USB meter not sampled",
+  "provider_options": null,
+  "requested_provider": "CPUExecutionProvider",
+  "run_id": "20260809T174053Z_oi_cpu_8f1f73aa",
+  "started_at": "2026-08-09T17:40:53.772311+00:00",
+  "status": "ok"
+}

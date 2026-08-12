@@ -1,0 +1,12 @@
+{
+  "dmips": 40258.327822045154,
+  "dmips_divisor": 1757.0,
+  "duration_seconds": 60,
+  "loops": 4244032919,
+  "loops_per_second": 70733881.98333333,
+  "units": {
+    "dmips": "DMIPS",
+    "throughput": "Dhrystone loops/second"
+  },
+  "variant": "UnixBench Dhrystone C 2.1 register (BYTE-modified)"
+}

@@ -1,0 +1,35 @@
+{
+  "kernels": {
+    "add": {
+      "average_seconds": 0.037235,
+      "best_rate_mb_per_second": 51751.9,
+      "maximum_seconds": 0.037424,
+      "minimum_seconds": 0.0371
+    },
+    "copy": {
+      "average_seconds": 0.016616,
+      "best_rate_mb_per_second": 77439.3,
+      "maximum_seconds": 0.017047,
+      "minimum_seconds": 0.016529
+    },
+    "scale": {
+      "average_seconds": 0.026302,
+      "best_rate_mb_per_second": 48950.2,
+      "maximum_seconds": 0.027285,
+      "minimum_seconds": 0.026149
+    },
+    "triad": {
+      "average_seconds": 0.037386,
+      "best_rate_mb_per_second": 51535.3,
+      "maximum_seconds": 0.03788,
+      "minimum_seconds": 0.037256
+    }
+  },
+  "threads_counted": 4,
+  "threads_requested": 4,
+  "units": {
+    "bandwidth": "MB/s (decimal)",
+    "time": "seconds"
+  },
+  "validated": true
+}

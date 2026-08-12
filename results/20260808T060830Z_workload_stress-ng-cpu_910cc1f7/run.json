@@ -1,0 +1,22 @@
+{
+  "argv": [
+    "stress-ng",
+    "--cpu",
+    "12",
+    "--timeout",
+    "60s",
+    "--metrics-brief"
+  ],
+  "category": "cpu",
+  "duration_seconds": 61.01514370699806,
+  "kind": "workload",
+  "parser_error": null,
+  "power_boundary": "on-board sensors only; USB meter not sampled",
+  "requested_duration_seconds": 60,
+  "return_code": 0,
+  "run_id": "20260808T060830Z_workload_stress-ng-cpu_910cc1f7",
+  "status": "ok",
+  "telemetry_interval_seconds": 1.0,
+  "threads": 12,
+  "workload": "stress-ng-cpu"
+}

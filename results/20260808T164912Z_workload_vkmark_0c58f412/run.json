@@ -1,0 +1,26 @@
+{
+  "argv": [
+    "vkmark",
+    "--winsys",
+    "wayland",
+    "--size",
+    "1920x1080"
+  ],
+  "category": "graphics",
+  "duration_seconds": 131.0221582009981,
+  "environment_overrides": {
+    "WAYLAND_DISPLAY": "wayland-0",
+    "XDG_RUNTIME_DIR": "/run/user/1000",
+    "XDG_SESSION_TYPE": "wayland"
+  },
+  "kind": "workload",
+  "parser_error": null,
+  "power_boundary": "on-board sensors only; USB meter not sampled",
+  "requested_duration_seconds": 300,
+  "return_code": 0,
+  "run_id": "20260808T164912Z_workload_vkmark_0c58f412",
+  "status": "ok",
+  "telemetry_interval_seconds": 1.0,
+  "threads": 1,
+  "workload": "vkmark"
+}

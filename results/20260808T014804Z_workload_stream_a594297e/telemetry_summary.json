@@ -1,0 +1,385 @@
+{
+  "cpu_utilization_percent": {
+    "cpu": 14.41291040623261,
+    "cpu0": 32.996632996633,
+    "cpu1": 0.33783783783783783,
+    "cpu10": 0.0,
+    "cpu11": 0.33444816053511706,
+    "cpu2": 0.9966777408637874,
+    "cpu3": 0.0,
+    "cpu4": 0.0,
+    "cpu5": 0.0,
+    "cpu6": 52.333333333333336,
+    "cpu7": 85.0,
+    "cpu8": 0.0,
+    "cpu9": 0.0
+  },
+  "distributions": {
+    "cpu.frequency_khz.cpu0": {
+      "count": 4,
+      "maximum": 3664431.0,
+      "mean": 1378725.0,
+      "minimum": 616823.0,
+      "p50": 616823.0,
+      "p90": 2750148.6000000006,
+      "p95": 3207289.799999999,
+      "p99": 3573002.7599999993
+    },
+    "cpu.frequency_khz.cpu1": {
+      "count": 4,
+      "maximum": 3663240.0,
+      "mean": 1378427.25,
+      "minimum": 616823.0,
+      "p50": 616823.0,
+      "p90": 2749314.9000000004,
+      "p95": 3206277.449999999,
+      "p99": 3571847.4899999993
+    },
+    "cpu.frequency_khz.cpu10": {
+      "count": 4,
+      "maximum": 616823.0,
+      "mean": 616823.0,
+      "minimum": 616823.0,
+      "p50": 616823.0,
+      "p90": 616823.0,
+      "p95": 616823.0,
+      "p99": 616823.0
+    },
+    "cpu.frequency_khz.cpu11": {
+      "count": 4,
+      "maximum": 2004908.0,
+      "mean": 963844.25,
+      "minimum": 616823.0,
+      "p50": 616823.0,
+      "p90": 1588482.5000000002,
+      "p95": 1796695.2499999995,
+      "p99": 1963265.4499999997
+    },
+    "cpu.frequency_khz.cpu2": {
+      "count": 4,
+      "maximum": 2104871.0,
+      "mean": 2015468.25,
+      "minimum": 1979060.0,
+      "p50": 1988971.0,
+      "p90": 2070240.8,
+      "p95": 2087555.9,
+      "p99": 2101407.98
+    },
+    "cpu.frequency_khz.cpu3": {
+      "count": 4,
+      "maximum": 1989647.0,
+      "mean": 1301619.5,
+      "minimum": 616823.0,
+      "p50": 1300004.0,
+      "p90": 1987708.4,
+      "p95": 1988677.7,
+      "p99": 1989453.14
+    },
+    "cpu.frequency_khz.cpu4": {
+      "count": 4,
+      "maximum": 1986127.0,
+      "mean": 959149.0,
+      "minimum": 616823.0,
+      "p50": 616823.0,
+      "p90": 1575335.8000000003,
+      "p95": 1780731.3999999994,
+      "p99": 1945047.8799999997
+    },
+    "cpu.frequency_khz.cpu5": {
+      "count": 4,
+      "maximum": 616823.0,
+      "mean": 616823.0,
+      "minimum": 616823.0,
+      "p50": 616823.0,
+      "p90": 616823.0,
+      "p95": 616823.0,
+      "p99": 616823.0
+    },
+    "cpu.frequency_khz.cpu6": {
+      "count": 4,
+      "maximum": 3663166.0,
+      "mean": 2897484.0,
+      "minimum": 616823.0,
+      "p50": 3654973.5,
+      "p90": 3661365.4,
+      "p95": 3662265.7,
+      "p99": 3662985.94
+    },
+    "cpu.frequency_khz.cpu7": {
+      "count": 4,
+      "maximum": 3663127.0,
+      "mean": 2138480.75,
+      "minimum": 616823.0,
+      "p50": 2136986.5,
+      "p90": 3661333.9,
+      "p95": 3662230.45,
+      "p99": 3662947.69
+    },
+    "cpu.frequency_khz.cpu8": {
+      "count": 4,
+      "maximum": 616823.0,
+      "mean": 616823.0,
+      "minimum": 616823.0,
+      "p50": 616823.0,
+      "p90": 616823.0,
+      "p95": 616823.0,
+      "p99": 616823.0
+    },
+    "cpu.frequency_khz.cpu9": {
+      "count": 4,
+      "maximum": 616823.0,
+      "mean": 616823.0,
+      "minimum": 616823.0,
+      "p50": 616823.0,
+      "p90": 616823.0,
+      "p95": 616823.0,
+      "p99": 616823.0
+    },
+    "gpu.card1.gpu_busy_percent": {
+      "count": 4,
+      "maximum": 0.0,
+      "mean": 0.0,
+      "minimum": 0.0,
+      "p50": 0.0,
+      "p90": 0.0,
+      "p95": 0.0,
+      "p99": 0.0
+    },
+    "gpu.card1.mem_info_vram_total": {
+      "count": 4,
+      "maximum": 536870912.0,
+      "mean": 536870912.0,
+      "minimum": 536870912.0,
+      "p50": 536870912.0,
+      "p90": 536870912.0,
+      "p95": 536870912.0,
+      "p99": 536870912.0
+    },
+    "gpu.card1.mem_info_vram_used": {
+      "count": 4,
+      "maximum": 215420928.0,
+      "mean": 215420928.0,
+      "minimum": 215420928.0,
+      "p50": 215420928.0,
+      "p90": 215420928.0,
+      "p95": 215420928.0,
+      "p99": 215420928.0
+    },
+    "hwmon.hwmon1.temp1_input": {
+      "count": 4,
+      "maximum": 69000.0,
+      "mean": 69000.0,
+      "minimum": 69000.0,
+      "p50": 69000.0,
+      "p90": 69000.0,
+      "p95": 69000.0,
+      "p99": 69000.0
+    },
+    "hwmon.hwmon2.temp1_input": {
+      "count": 4,
+      "maximum": 21850.0,
+      "mean": 21850.0,
+      "minimum": 21850.0,
+      "p50": 21850.0,
+      "p90": 21850.0,
+      "p95": 21850.0,
+      "p99": 21850.0
+    },
+    "hwmon.hwmon2.temp2_input": {
+      "count": 4,
+      "maximum": 21850.0,
+      "mean": 21850.0,
+      "minimum": 21850.0,
+      "p50": 21850.0,
+      "p90": 21850.0,
+      "p95": 21850.0,
+      "p99": 21850.0
+    },
+    "hwmon.hwmon2.temp3_input": {
+      "count": 4,
+      "maximum": 21850.0,
+      "mean": 21350.0,
+      "minimum": 20850.0,
+      "p50": 21350.0,
+      "p90": 21850.0,
+      "p95": 21850.0,
+      "p99": 21850.0
+    },
+    "hwmon.hwmon3.power1_input": {
+      "count": 4,
+      "maximum": 11072000.0,
+      "mean": 9562250.0,
+      "minimum": 8048000.0,
+      "p50": 9564500.0,
+      "p90": 10769900.0,
+      "p95": 10920950.0,
+      "p99": 11041790.0
+    },
+    "hwmon.hwmon3.temp1_input": {
+      "count": 4,
+      "maximum": 19000.0,
+      "mean": 18750.0,
+      "minimum": 18000.0,
+      "p50": 19000.0,
+      "p90": 19000.0,
+      "p95": 19000.0,
+      "p99": 19000.0
+    },
+    "memory_kib.Dirty": {
+      "count": 4,
+      "maximum": 300.0,
+      "mean": 290.0,
+      "minimum": 280.0,
+      "p50": 290.0,
+      "p90": 297.6,
+      "p95": 298.8,
+      "p99": 299.76
+    },
+    "memory_kib.MemAvailable": {
+      "count": 4,
+      "maximum": 28870508.0,
+      "mean": 27881459.0,
+      "minimum": 26984812.0,
+      "p50": 27835258.0,
+      "p90": 28815066.8,
+      "p95": 28842787.4,
+      "p99": 28864963.88
+    },
+    "memory_kib.MemFree": {
+      "count": 4,
+      "maximum": 25120344.0,
+      "mean": 24131280.0,
+      "minimum": 23234628.0,
+      "p50": 24085074.0,
+      "p90": 25064896.8,
+      "p95": 25092620.4,
+      "p99": 25114799.28
+    },
+    "memory_kib.SwapFree": {
+      "count": 4,
+      "maximum": 8388604.0,
+      "mean": 8388604.0,
+      "minimum": 8388604.0,
+      "p50": 8388604.0,
+      "p90": 8388604.0,
+      "p95": 8388604.0,
+      "p99": 8388604.0
+    },
+    "pressure.cpu.full_avg10": {
+      "count": 4,
+      "maximum": 0.0,
+      "mean": 0.0,
+      "minimum": 0.0,
+      "p50": 0.0,
+      "p90": 0.0,
+      "p95": 0.0,
+      "p99": 0.0
+    },
+    "pressure.cpu.some_avg10": {
+      "count": 4,
+      "maximum": 0.0,
+      "mean": 0.0,
+      "minimum": 0.0,
+      "p50": 0.0,
+      "p90": 0.0,
+      "p95": 0.0,
+      "p99": 0.0
+    },
+    "pressure.io.full_avg10": {
+      "count": 4,
+      "maximum": 0.0,
+      "mean": 0.0,
+      "minimum": 0.0,
+      "p50": 0.0,
+      "p90": 0.0,
+      "p95": 0.0,
+      "p99": 0.0
+    },
+    "pressure.io.some_avg10": {
+      "count": 4,
+      "maximum": 0.0,
+      "mean": 0.0,
+      "minimum": 0.0,
+      "p50": 0.0,
+      "p90": 0.0,
+      "p95": 0.0,
+      "p99": 0.0
+    },
+    "pressure.memory.full_avg10": {
+      "count": 4,
+      "maximum": 0.0,
+      "mean": 0.0,
+      "minimum": 0.0,
+      "p50": 0.0,
+      "p90": 0.0,
+      "p95": 0.0,
+      "p99": 0.0
+    },
+    "pressure.memory.some_avg10": {
+      "count": 4,
+      "maximum": 0.0,
+      "mean": 0.0,
+      "minimum": 0.0,
+      "p50": 0.0,
+      "p90": 0.0,
+      "p95": 0.0,
+      "p99": 0.0
+    }
+  },
+  "duration_seconds": 3.000572725,
+  "network_deltas": {
+    "enx00249b157387": {
+      "rx_bytes": 6632,
+      "rx_dropped": 0,
+      "rx_errors": 0,
+      "rx_packets": 45,
+      "tx_bytes": 4431,
+      "tx_dropped": 0,
+      "tx_errors": 0,
+      "tx_packets": 31
+    },
+    "lo": {
+      "rx_bytes": 5253,
+      "rx_dropped": 0,
+      "rx_errors": 0,
+      "rx_packets": 51,
+      "tx_bytes": 5253,
+      "tx_dropped": 0,
+      "tx_errors": 0,
+      "tx_packets": 51
+    }
+  },
+  "network_rates": {
+    "enx00249b157387": {
+      "rx_bytes_per_second": 2210.2447125323383,
+      "tx_bytes_per_second": 1476.7180822121218
+    },
+    "lo": {
+      "rx_bytes_per_second": 1750.665783313084,
+      "tx_bytes_per_second": 1750.665783313084
+    }
+  },
+  "powercap_energy": {},
+  "pressure_total_percent": {
+    "cpu": {
+      "full": 0.0,
+      "some": 0.08208432941747812
+    },
+    "io": {
+      "full": 0.06035514436664754,
+      "some": 0.06032181739571068
+    },
+    "memory": {
+      "full": 0.0,
+      "some": 0.0
+    }
+  },
+  "sample_count": 4,
+  "units": {
+    "cpu.frequency_khz": "kHz",
+    "gpu.mem_info": "bytes",
+    "hwmon.power_input": "microwatts; boundary is defined by the matching label",
+    "hwmon.temp_input": "millidegrees Celsius",
+    "memory_kib": "KiB"
+  }
+}

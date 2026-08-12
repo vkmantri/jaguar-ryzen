@@ -1,0 +1,23 @@
+{
+  "argv": [
+    "coremark-12t",
+    "0x0",
+    "0x0",
+    "0x66",
+    "0",
+    "7",
+    "1",
+    "2000"
+  ],
+  "category": "cpu",
+  "duration_seconds": 31.012881077000202,
+  "kind": "workload",
+  "power_boundary": "on-board sensors only; USB meter not sampled",
+  "requested_duration_seconds": 60,
+  "return_code": 0,
+  "run_id": "20260808T054532Z_workload_coremark-12t_cd5d8876",
+  "status": "ok",
+  "telemetry_interval_seconds": 1.0,
+  "threads": 1,
+  "workload": "coremark-12t"
+}

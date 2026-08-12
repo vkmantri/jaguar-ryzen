@@ -1,0 +1,19 @@
+{
+  "aggregate_scaling": 7.240211742944096,
+  "dmips_divisor": 1757.0,
+  "parallel_efficiency_percent": 60.33509785786747,
+  "single_copy": {
+    "dmips": 40296.44166192373,
+    "loops_per_second": 70800848.0,
+    "samples": 7,
+    "seconds_per_sample": 10.0
+  },
+  "source_revision": "e949d4402f76b4bc9b7b114418faace882f0ef12",
+  "twelve_copy": {
+    "dmips": 291754.77011952194,
+    "loops_per_second": 512613131.1,
+    "samples": 7,
+    "seconds_per_sample": 10.0
+  },
+  "variant": "UnixBench 6.0.1 Dhrystone C 2.1 register (BYTE-modified)"
+}

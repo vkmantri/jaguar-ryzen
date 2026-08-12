@@ -1,0 +1,98 @@
+{
+  "device": "AMD Ryzen Embedded V4A46X (RADV GFX1153)",
+  "driver": "radv / Mesa 25.2.8-0ubuntu0.24.04.2",
+  "scenarios": {
+    "bf16-dotprod": {
+      "unit": "GFLOPS",
+      "value": 0.0
+    },
+    "bf16-matrix": {
+      "unit": "GFLOPS",
+      "value": 0.0
+    },
+    "bf8-matrix": {
+      "unit": "GFLOPS",
+      "value": 0.0
+    },
+    "copy-d2d": {
+      "unit": "GBPS",
+      "value": 49.64
+    },
+    "copy-d2h": {
+      "unit": "GBPS",
+      "value": 18.93
+    },
+    "copy-h2d": {
+      "unit": "GBPS",
+      "value": 18.65
+    },
+    "copy-h2h": {
+      "unit": "GBPS",
+      "value": 18.5
+    },
+    "fp16-matrix": {
+      "unit": "GFLOPS",
+      "value": 4372.52
+    },
+    "fp16-scalar": {
+      "unit": "GFLOPS",
+      "value": 1423.44
+    },
+    "fp16-vec4": {
+      "unit": "GFLOPS",
+      "value": 2265.76
+    },
+    "fp32-scalar": {
+      "unit": "GFLOPS",
+      "value": 1428.4
+    },
+    "fp32-vec4": {
+      "unit": "GFLOPS",
+      "value": 979.16
+    },
+    "fp64-scalar": {
+      "unit": "GFLOPS",
+      "value": 37.5
+    },
+    "fp64-vec4": {
+      "unit": "GFLOPS",
+      "value": 37.21
+    },
+    "fp8-matrix": {
+      "unit": "GFLOPS",
+      "value": 0.0
+    },
+    "int16-scalar": {
+      "unit": "GIOPS",
+      "value": 1278.07
+    },
+    "int16-vec4": {
+      "unit": "GIOPS",
+      "value": 2331.07
+    },
+    "int32-scalar": {
+      "unit": "GIOPS",
+      "value": 240.97
+    },
+    "int32-vec4": {
+      "unit": "GIOPS",
+      "value": 239.05
+    },
+    "int64-scalar": {
+      "unit": "GIOPS",
+      "value": 80.34
+    },
+    "int64-vec4": {
+      "unit": "GIOPS",
+      "value": 66.2
+    },
+    "int8-dotprod": {
+      "unit": "GIOPS",
+      "value": 4048.95
+    },
+    "int8-matrix": {
+      "unit": "GIOPS",
+      "value": 4540.95
+    }
+  }
+}

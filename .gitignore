@@ -1,0 +1,60 @@
+# Credentials and local environment
+.env
+.env.*
+!.env.example
+.venv/
+__pycache__/
+*.py[cod]
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# User guides, customer models, generated models, and vendor packages
+*.pdf
+*.onnx
+*.onnx.xz
+*.deb
+*.zip
+models/**
+!models/**/
+!models/**/*.json
+vendor/
+vendor-docs/
+quantized_info.csv
+
+# General profiling harness and its tests are not part of this repository
+src/
+tests/
+pyproject.toml
+
+# External benchmark sources, binaries, and build output
+workloads/
+
+# Exclude scripts by default, then publish only requested AI/voice/LLM code
+scripts/*
+!scripts/voice-agent/
+scripts/voice-agent/*
+!scripts/voice-agent/voice_assistant.py
+!scripts/voice-agent/voice_loop.py
+!scripts/voice-agent/llm_server.py
+!scripts/asr/
+scripts/asr/*
+!scripts/asr/benchmark_asr.py
+!scripts/asr/voice-assistant-env.sh
+!scripts/llm/
+scripts/llm/*
+!scripts/llm/benchmark_llm.py
+!scripts/llm/llm-env.sh
+!scripts/ryzenai-env.sh
+
+# Publish Ryzen AI execution-provider configuration, not board/profiling config
+config/*
+!config/vai_ep_bf16.json
+!config/vai_ep_bf16_amd_exact.json
+!config/vai_ep_bf16_vectorized_opt1.json
+!config/vai_ep_bf16_vectorized_opt3.json
+
+# Result evidence is curated explicitly. Existing selected files remain tracked;
+# future raw/intermediate runs stay local unless force-added after review.
+results/**

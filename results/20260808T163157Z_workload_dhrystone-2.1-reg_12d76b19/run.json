@@ -1,0 +1,18 @@
+{
+  "argv": [
+    "dhry2reg",
+    "60"
+  ],
+  "category": "cpu",
+  "duration_seconds": 61.012617679996765,
+  "kind": "workload",
+  "parser_error": null,
+  "power_boundary": "on-board sensors only; USB meter not sampled",
+  "requested_duration_seconds": 60,
+  "return_code": 0,
+  "run_id": "20260808T163157Z_workload_dhrystone-2.1-reg_12d76b19",
+  "status": "ok",
+  "telemetry_interval_seconds": 1.0,
+  "threads": 1,
+  "workload": "dhrystone-2.1-reg"
+}

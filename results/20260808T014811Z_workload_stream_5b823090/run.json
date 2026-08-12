@@ -1,0 +1,19 @@
+{
+  "argv": [
+    "stream"
+  ],
+  "category": "memory",
+  "duration_seconds": 3.011631082999884,
+  "environment_overrides": {
+    "OMP_NUM_THREADS": "6"
+  },
+  "kind": "workload",
+  "power_boundary": "on-board sensors only; USB meter not sampled",
+  "requested_duration_seconds": 60,
+  "return_code": 0,
+  "run_id": "20260808T014811Z_workload_stream_5b823090",
+  "status": "ok",
+  "telemetry_interval_seconds": 1.0,
+  "threads": 6,
+  "workload": "stream"
+}

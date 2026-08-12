@@ -1,0 +1,13 @@
+{
+  "events_per_second": 25049.69,
+  "latency_average_ms": 0.48,
+  "latency_max_ms": 12.0,
+  "latency_min_ms": 0.22,
+  "latency_p95_ms": 0.52,
+  "total_events": 1503013,
+  "total_seconds": 60.0004,
+  "units": {
+    "latency": "milliseconds",
+    "throughput": "events/second"
+  }
+}

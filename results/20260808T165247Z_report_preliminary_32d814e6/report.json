@@ -1,0 +1,806 @@
+{
+  "areas": {
+    "audio": {
+      "reasons": [
+        "physical loopback fixture is not confirmed"
+      ],
+      "status": "blocked"
+    },
+    "cpu": {
+      "reasons": [],
+      "status": "ready"
+    },
+    "cpu_counters": {
+      "reasons": [
+        "hardware counters are blocked by perf_event_paranoid=4"
+      ],
+      "status": "blocked"
+    },
+    "display_4_to_6": {
+      "reasons": [
+        "only 1 physical display is connected"
+      ],
+      "status": "blocked"
+    },
+    "ethernet_usb_baseline": {
+      "reasons": [],
+      "status": "ready"
+    },
+    "idle_telemetry": {
+      "reasons": [],
+      "status": "pass"
+    },
+    "inventory": {
+      "reasons": [],
+      "status": "pass"
+    },
+    "isp": {
+      "reasons": [
+        "no /dev/media* node is present",
+        "no /dev/video* node is present"
+      ],
+      "status": "blocked"
+    },
+    "media_decode": {
+      "reasons": [],
+      "status": "ready"
+    },
+    "memory": {
+      "reasons": [],
+      "status": "ready"
+    },
+    "oi_graph": {
+      "reasons": [],
+      "status": "ready"
+    },
+    "oi_quantization": {
+      "reasons": [
+        "calibration/evaluation data and accuracy acceptance are missing",
+        "xrt-smi is not installed"
+      ],
+      "status": "blocked"
+    },
+    "oi_source_integrity": {
+      "reasons": [],
+      "status": "pass"
+    },
+    "sfp_plus": {
+      "reasons": [
+        "no native PCI network interface is active",
+        "compatible DAC/optics and link peer are not confirmed"
+      ],
+      "status": "blocked"
+    },
+    "storage": {
+      "reasons": [],
+      "status": "ready"
+    },
+    "vulkan": {
+      "reasons": [],
+      "status": "ready"
+    }
+  },
+  "baseline_frozen": false,
+  "board": {
+    "bios_date": "11/10/2025 20:15:08",
+    "bios_vendor": "AMD",
+    "bios_version": "RIJ0071C",
+    "board_name": "BirmanPlus-KRK2e",
+    "board_vendor": "AMD",
+    "board_version": "RevB",
+    "product_name": "BirmanPlus-KRK2e",
+    "product_version": "RIJ0071C"
+  },
+  "cpu_coremark": [
+    {
+      "acpi_temperature_c_p99": 71.0,
+      "approximate_score_per_apu_ppt_watt": 4932.840722613522,
+      "apu_ppt_watts_mean": 7.189181818181819,
+      "cpu_utilization_percent": 8.220537450879213,
+      "score_iterations_per_second": 35463.088835,
+      "threads": 1,
+      "total_seconds": 16.919,
+      "validated": true
+    },
+    {
+      "acpi_temperature_c_p99": 74.0,
+      "approximate_score_per_apu_ppt_watt": 14070.203352810284,
+      "apu_ppt_watts_mean": 12.34964,
+      "cpu_utilization_percent": 41.72367096079725,
+      "score_iterations_per_second": 173761.946134,
+      "threads": 6,
+      "total_seconds": 20.718,
+      "validated": true
+    },
+    {
+      "acpi_temperature_c_p99": 80.0,
+      "approximate_score_per_apu_ppt_watt": 15354.353672900053,
+      "apu_ppt_watts_mean": 17.27090625,
+      "cpu_utilization_percent": 81.95822243729333,
+      "score_iterations_per_second": 265183.602814,
+      "threads": 12,
+      "total_seconds": 27.151,
+      "validated": true
+    }
+  ],
+  "cpu_dhrystone": {
+    "dmips": 40258.327822045154,
+    "dmips_divisor": 1757.0,
+    "duration_seconds": 60,
+    "loops": 4244032919,
+    "loops_per_second": 70733881.98333333,
+    "units": {
+      "dmips": "DMIPS",
+      "throughput": "Dhrystone loops/second"
+    },
+    "variant": "UnixBench Dhrystone C 2.1 register (BYTE-modified)"
+  },
+  "cpu_dhrystone_unixbench": {
+    "aggregate_scaling": 7.240211742944096,
+    "dmips_divisor": 1757.0,
+    "parallel_efficiency_percent": 60.33509785786747,
+    "single_copy": {
+      "dmips": 40296.44166192373,
+      "loops_per_second": 70800848.0,
+      "samples": 7,
+      "seconds_per_sample": 10.0
+    },
+    "source_revision": "e949d4402f76b4bc9b7b114418faace882f0ef12",
+    "twelve_copy": {
+      "dmips": 291754.77011952194,
+      "loops_per_second": 512613131.1,
+      "samples": 7,
+      "seconds_per_sample": 10.0
+    },
+    "variant": "UnixBench 6.0.1 Dhrystone C 2.1 register (BYTE-modified)"
+  },
+  "cpu_stress_ng": {
+    "bogo_operations": 890862,
+    "bogo_ops_per_second_cpu_time": 1238.74,
+    "bogo_ops_per_second_real": 14847.25,
+    "failed_stressors": 0,
+    "real_seconds": 60.0,
+    "system_seconds": 0.16,
+    "units": {
+      "rate": "bogo operations/second",
+      "time": "seconds"
+    },
+    "user_seconds": 719.01
+  },
+  "cpu_sysbench": [
+    {
+      "events_per_second": 4538.08,
+      "latency_average_ms": 0.22,
+      "latency_max_ms": 0.58,
+      "latency_min_ms": 0.22,
+      "latency_p95_ms": 0.22,
+      "threads": 1,
+      "total_events": 272290,
+      "total_seconds": 60.0003,
+      "units": {
+        "latency": "milliseconds",
+        "throughput": "events/second"
+      }
+    },
+    {
+      "events_per_second": 23948.22,
+      "latency_average_ms": 0.25,
+      "latency_max_ms": 0.86,
+      "latency_min_ms": 0.22,
+      "latency_p95_ms": 0.27,
+      "threads": 6,
+      "total_events": 1436921,
+      "total_seconds": 60.0001,
+      "units": {
+        "latency": "milliseconds",
+        "throughput": "events/second"
+      }
+    },
+    {
+      "events_per_second": 25049.69,
+      "latency_average_ms": 0.48,
+      "latency_max_ms": 12.0,
+      "latency_min_ms": 0.22,
+      "latency_p95_ms": 0.52,
+      "threads": 12,
+      "total_events": 1503013,
+      "total_seconds": 60.0004,
+      "units": {
+        "latency": "milliseconds",
+        "throughput": "events/second"
+      }
+    }
+  ],
+  "generated_at": "2026-08-08T16:52:47.058202+00:00",
+  "gpu_vkpeak": {
+    "device": "AMD Ryzen Embedded V4A46X (RADV GFX1153)",
+    "driver": "radv / Mesa 25.2.8-0ubuntu0.24.04.2",
+    "scenarios": {
+      "bf16-dotprod": {
+        "unit": "GFLOPS",
+        "value": 0.0
+      },
+      "bf16-matrix": {
+        "unit": "GFLOPS",
+        "value": 0.0
+      },
+      "bf8-matrix": {
+        "unit": "GFLOPS",
+        "value": 0.0
+      },
+      "copy-d2d": {
+        "unit": "GBPS",
+        "value": 49.64
+      },
+      "copy-d2h": {
+        "unit": "GBPS",
+        "value": 18.93
+      },
+      "copy-h2d": {
+        "unit": "GBPS",
+        "value": 18.65
+      },
+      "copy-h2h": {
+        "unit": "GBPS",
+        "value": 18.5
+      },
+      "fp16-matrix": {
+        "unit": "GFLOPS",
+        "value": 4372.52
+      },
+      "fp16-scalar": {
+        "unit": "GFLOPS",
+        "value": 1423.44
+      },
+      "fp16-vec4": {
+        "unit": "GFLOPS",
+        "value": 2265.76
+      },
+      "fp32-scalar": {
+        "unit": "GFLOPS",
+        "value": 1428.4
+      },
+      "fp32-vec4": {
+        "unit": "GFLOPS",
+        "value": 979.16
+      },
+      "fp64-scalar": {
+        "unit": "GFLOPS",
+        "value": 37.5
+      },
+      "fp64-vec4": {
+        "unit": "GFLOPS",
+        "value": 37.21
+      },
+      "fp8-matrix": {
+        "unit": "GFLOPS",
+        "value": 0.0
+      },
+      "int16-scalar": {
+        "unit": "GIOPS",
+        "value": 1278.07
+      },
+      "int16-vec4": {
+        "unit": "GIOPS",
+        "value": 2331.07
+      },
+      "int32-scalar": {
+        "unit": "GIOPS",
+        "value": 240.97
+      },
+      "int32-vec4": {
+        "unit": "GIOPS",
+        "value": 239.05
+      },
+      "int64-scalar": {
+        "unit": "GIOPS",
+        "value": 80.34
+      },
+      "int64-vec4": {
+        "unit": "GIOPS",
+        "value": 66.2
+      },
+      "int8-dotprod": {
+        "unit": "GIOPS",
+        "value": 4048.95
+      },
+      "int8-matrix": {
+        "unit": "GIOPS",
+        "value": 4540.95
+      }
+    }
+  },
+  "graphics_vkmark": {
+    "device": "AMD Ryzen Embedded V4A46X (RADV GFX1153)",
+    "resolution": "1920x1080",
+    "scenes": [
+      {
+        "fps": 24442,
+        "frame_time_ms": 0.041,
+        "options": "device-local=true",
+        "scene": "vertex"
+      },
+      {
+        "fps": 24454,
+        "frame_time_ms": 0.041,
+        "options": "device-local=false",
+        "scene": "vertex"
+      },
+      {
+        "fps": 17257,
+        "frame_time_ms": 0.058,
+        "options": "anisotropy=0",
+        "scene": "texture"
+      },
+      {
+        "fps": 16424,
+        "frame_time_ms": 0.061,
+        "options": "anisotropy=16",
+        "scene": "texture"
+      },
+      {
+        "fps": 14095,
+        "frame_time_ms": 0.071,
+        "options": "shading=gouraud",
+        "scene": "shading"
+      },
+      {
+        "fps": 13502,
+        "frame_time_ms": 0.074,
+        "options": "shading=blinn-phong-inf",
+        "scene": "shading"
+      },
+      {
+        "fps": 12977,
+        "frame_time_ms": 0.077,
+        "options": "shading=phong",
+        "scene": "shading"
+      },
+      {
+        "fps": 12580,
+        "frame_time_ms": 0.079,
+        "options": "shading=cel",
+        "scene": "shading"
+      },
+      {
+        "fps": 3246,
+        "frame_time_ms": 0.308,
+        "options": "kernel=edge",
+        "scene": "effect2d"
+      },
+      {
+        "fps": 1164,
+        "frame_time_ms": 0.859,
+        "options": "kernel=blur",
+        "scene": "effect2d"
+      },
+      {
+        "fps": 4846,
+        "frame_time_ms": 0.206,
+        "options": "<default>",
+        "scene": "desktop"
+      },
+      {
+        "fps": 12094,
+        "frame_time_ms": 0.083,
+        "options": "<default>",
+        "scene": "cube"
+      },
+      {
+        "fps": 7233,
+        "frame_time_ms": 0.138,
+        "options": "<default>",
+        "scene": "clear"
+      }
+    ],
+    "score": 12639,
+    "version": "2025.01",
+    "window_system": "wayland"
+  },
+  "idle": {
+    "acpi_temperature_c_p99": 66.4,
+    "amdgpu_temperature_c_p99": 17.0,
+    "apu_ppt_watts_mean": 3.1961967213114755,
+    "apu_ppt_watts_p99": 5.0502,
+    "cpu_utilization_percent": 0.23774434835803465,
+    "duration_seconds": 60.000437181,
+    "gpu_busy_percent_p99": 0.0,
+    "power_boundary": "APU PPT sampled power only; no whole-board USB-meter samples or energy counter",
+    "sample_count": 61,
+    "sensor_warning": "ACPI and AMDGPU temperature readings disagree; neither is accepted as SoC temperature until mapped."
+  },
+  "memory_stream": [
+    {
+      "kernels": {
+        "add": {
+          "average_seconds": 0.046869,
+          "best_rate_mb_per_second": 41087.1,
+          "maximum_seconds": 0.047385,
+          "minimum_seconds": 0.04673
+        },
+        "copy": {
+          "average_seconds": 0.023457,
+          "best_rate_mb_per_second": 54999.4,
+          "maximum_seconds": 0.02408,
+          "minimum_seconds": 0.023273
+        },
+        "scale": {
+          "average_seconds": 0.033225,
+          "best_rate_mb_per_second": 38957.6,
+          "maximum_seconds": 0.033719,
+          "minimum_seconds": 0.032856
+        },
+        "triad": {
+          "average_seconds": 0.046836,
+          "best_rate_mb_per_second": 41223.8,
+          "maximum_seconds": 0.047556,
+          "minimum_seconds": 0.046575
+        }
+      },
+      "threads_counted": 1,
+      "threads_requested": 1,
+      "units": {
+        "bandwidth": "MB/s (decimal)",
+        "time": "seconds"
+      },
+      "validated": true
+    },
+    {
+      "kernels": {
+        "add": {
+          "average_seconds": 0.036041,
+          "best_rate_mb_per_second": 53421.1,
+          "maximum_seconds": 0.036211,
+          "minimum_seconds": 0.035941
+        },
+        "copy": {
+          "average_seconds": 0.017043,
+          "best_rate_mb_per_second": 75422.3,
+          "maximum_seconds": 0.017135,
+          "minimum_seconds": 0.016971
+        },
+        "scale": {
+          "average_seconds": 0.025569,
+          "best_rate_mb_per_second": 50229.3,
+          "maximum_seconds": 0.025681,
+          "minimum_seconds": 0.025483
+        },
+        "triad": {
+          "average_seconds": 0.036092,
+          "best_rate_mb_per_second": 53296.3,
+          "maximum_seconds": 0.036224,
+          "minimum_seconds": 0.036025
+        }
+      },
+      "threads_counted": 2,
+      "threads_requested": 2,
+      "units": {
+        "bandwidth": "MB/s (decimal)",
+        "time": "seconds"
+      },
+      "validated": true
+    },
+    {
+      "kernels": {
+        "add": {
+          "average_seconds": 0.037235,
+          "best_rate_mb_per_second": 51751.9,
+          "maximum_seconds": 0.037424,
+          "minimum_seconds": 0.0371
+        },
+        "copy": {
+          "average_seconds": 0.016616,
+          "best_rate_mb_per_second": 77439.3,
+          "maximum_seconds": 0.017047,
+          "minimum_seconds": 0.016529
+        },
+        "scale": {
+          "average_seconds": 0.026302,
+          "best_rate_mb_per_second": 48950.2,
+          "maximum_seconds": 0.027285,
+          "minimum_seconds": 0.026149
+        },
+        "triad": {
+          "average_seconds": 0.037386,
+          "best_rate_mb_per_second": 51535.3,
+          "maximum_seconds": 0.03788,
+          "minimum_seconds": 0.037256
+        }
+      },
+      "threads_counted": 4,
+      "threads_requested": 4,
+      "units": {
+        "bandwidth": "MB/s (decimal)",
+        "time": "seconds"
+      },
+      "validated": true
+    },
+    {
+      "kernels": {
+        "add": {
+          "average_seconds": 0.039294,
+          "best_rate_mb_per_second": 49147.5,
+          "maximum_seconds": 0.039789,
+          "minimum_seconds": 0.039066
+        },
+        "copy": {
+          "average_seconds": 0.017532,
+          "best_rate_mb_per_second": 73357.1,
+          "maximum_seconds": 0.017633,
+          "minimum_seconds": 0.017449
+        },
+        "scale": {
+          "average_seconds": 0.028291,
+          "best_rate_mb_per_second": 45567.8,
+          "maximum_seconds": 0.02875,
+          "minimum_seconds": 0.02809
+        },
+        "triad": {
+          "average_seconds": 0.039394,
+          "best_rate_mb_per_second": 49021.8,
+          "maximum_seconds": 0.03978,
+          "minimum_seconds": 0.039166
+        }
+      },
+      "threads_counted": 6,
+      "threads_requested": 6,
+      "units": {
+        "bandwidth": "MB/s (decimal)",
+        "time": "seconds"
+      },
+      "validated": true
+    },
+    {
+      "kernels": {
+        "add": {
+          "average_seconds": 0.041267,
+          "best_rate_mb_per_second": 46852.0,
+          "maximum_seconds": 0.041647,
+          "minimum_seconds": 0.04098
+        },
+        "copy": {
+          "average_seconds": 0.018191,
+          "best_rate_mb_per_second": 70773.1,
+          "maximum_seconds": 0.018455,
+          "minimum_seconds": 0.018086
+        },
+        "scale": {
+          "average_seconds": 0.030675,
+          "best_rate_mb_per_second": 42203.8,
+          "maximum_seconds": 0.031616,
+          "minimum_seconds": 0.030329
+        },
+        "triad": {
+          "average_seconds": 0.04137,
+          "best_rate_mb_per_second": 46679.0,
+          "maximum_seconds": 0.042254,
+          "minimum_seconds": 0.041132
+        }
+      },
+      "threads_counted": 12,
+      "threads_requested": 12,
+      "units": {
+        "bandwidth": "MB/s (decimal)",
+        "time": "seconds"
+      },
+      "validated": true
+    }
+  ],
+  "memory_tinymembench": {
+    "bandwidth": {
+      "C 2-pass copy": 19904.2,
+      "C 2-pass copy prefetched (32 bytes step)": 20102.5,
+      "C 2-pass copy prefetched (64 bytes step)": 20213.2,
+      "C copy": 20090.1,
+      "C copy backwards": 20136.7,
+      "C copy backwards (32 byte blocks)": 20100.5,
+      "C copy backwards (64 byte blocks)": 20091.2,
+      "C copy prefetched (32 bytes step)": 20154.6,
+      "C copy prefetched (64 bytes step)": 20103.1,
+      "C fill": 31192.4,
+      "C fill (shuffle within 16 byte blocks)": 31153.0,
+      "C fill (shuffle within 32 byte blocks)": 31182.5,
+      "C fill (shuffle within 64 byte blocks)": 31161.6,
+      "MOVSB copy": 37915.1,
+      "MOVSD copy": 37922.9,
+      "SSE2 2-pass copy": 19994.4,
+      "SSE2 2-pass copy prefetched (32 bytes step)": 20571.8,
+      "SSE2 2-pass copy prefetched (64 bytes step)": 20522.5,
+      "SSE2 2-pass nontemporal copy": 7472.7,
+      "SSE2 copy": 20310.0,
+      "SSE2 copy prefetched (32 bytes step)": 20301.6,
+      "SSE2 copy prefetched (64 bytes step)": 20310.7,
+      "SSE2 fill": 33391.6,
+      "SSE2 nontemporal copy": 35616.6,
+      "SSE2 nontemporal copy prefetched (32 bytes step)": 36193.4,
+      "SSE2 nontemporal copy prefetched (64 bytes step)": 35200.5,
+      "SSE2 nontemporal fill": 63755.0,
+      "standard memcpy": 28105.9,
+      "standard memset": 63464.0
+    },
+    "latency": {
+      "hugepage": {
+        "1024": {
+          "dual_random_read_extra_ns": 0.0,
+          "single_random_read_extra_ns": 0.0
+        },
+        "1048576": {
+          "dual_random_read_extra_ns": 3.0,
+          "single_random_read_extra_ns": 2.9
+        },
+        "131072": {
+          "dual_random_read_extra_ns": 2.3,
+          "single_random_read_extra_ns": 1.7
+        },
+        "16384": {
+          "dual_random_read_extra_ns": 0.0,
+          "single_random_read_extra_ns": 0.0
+        },
+        "16777216": {
+          "dual_random_read_extra_ns": 88.4,
+          "single_random_read_extra_ns": 60.1
+        },
+        "2048": {
+          "dual_random_read_extra_ns": 0.0,
+          "single_random_read_extra_ns": 0.0
+        },
+        "2097152": {
+          "dual_random_read_extra_ns": 9.9,
+          "single_random_read_extra_ns": 7.6
+        },
+        "262144": {
+          "dual_random_read_extra_ns": 2.6,
+          "single_random_read_extra_ns": 2.2
+        },
+        "32768": {
+          "dual_random_read_extra_ns": 0.0,
+          "single_random_read_extra_ns": 0.0
+        },
+        "33554432": {
+          "dual_random_read_extra_ns": 112.7,
+          "single_random_read_extra_ns": 87.5
+        },
+        "4096": {
+          "dual_random_read_extra_ns": 0.0,
+          "single_random_read_extra_ns": 0.0
+        },
+        "4194304": {
+          "dual_random_read_extra_ns": 11.8,
+          "single_random_read_extra_ns": 10.2
+        },
+        "524288": {
+          "dual_random_read_extra_ns": 2.7,
+          "single_random_read_extra_ns": 2.6
+        },
+        "65536": {
+          "dual_random_read_extra_ns": 1.1,
+          "single_random_read_extra_ns": 0.7
+        },
+        "67108864": {
+          "dual_random_read_extra_ns": 120.3,
+          "single_random_read_extra_ns": 100.5
+        },
+        "8192": {
+          "dual_random_read_extra_ns": 0.0,
+          "single_random_read_extra_ns": 0.0
+        },
+        "8388608": {
+          "dual_random_read_extra_ns": 14.1,
+          "single_random_read_extra_ns": 13.0
+        }
+      },
+      "no_hugepage": {
+        "1024": {
+          "dual_random_read_extra_ns": 0.0,
+          "single_random_read_extra_ns": 0.0
+        },
+        "1048576": {
+          "dual_random_read_extra_ns": 5.6,
+          "single_random_read_extra_ns": 4.9
+        },
+        "131072": {
+          "dual_random_read_extra_ns": 2.3,
+          "single_random_read_extra_ns": 1.7
+        },
+        "16384": {
+          "dual_random_read_extra_ns": 0.0,
+          "single_random_read_extra_ns": 0.0
+        },
+        "16777216": {
+          "dual_random_read_extra_ns": 90.6,
+          "single_random_read_extra_ns": 62.7
+        },
+        "2048": {
+          "dual_random_read_extra_ns": 0.0,
+          "single_random_read_extra_ns": 0.0
+        },
+        "2097152": {
+          "dual_random_read_extra_ns": 11.5,
+          "single_random_read_extra_ns": 9.2
+        },
+        "262144": {
+          "dual_random_read_extra_ns": 2.6,
+          "single_random_read_extra_ns": 2.2
+        },
+        "32768": {
+          "dual_random_read_extra_ns": 0.0,
+          "single_random_read_extra_ns": 0.0
+        },
+        "33554432": {
+          "dual_random_read_extra_ns": 119.9,
+          "single_random_read_extra_ns": 95.1
+        },
+        "4096": {
+          "dual_random_read_extra_ns": 0.0,
+          "single_random_read_extra_ns": 0.0
+        },
+        "4194304": {
+          "dual_random_read_extra_ns": 13.6,
+          "single_random_read_extra_ns": 12.1
+        },
+        "524288": {
+          "dual_random_read_extra_ns": 3.4,
+          "single_random_read_extra_ns": 3.0
+        },
+        "65536": {
+          "dual_random_read_extra_ns": 1.1,
+          "single_random_read_extra_ns": 0.7
+        },
+        "67108864": {
+          "dual_random_read_extra_ns": 129.6,
+          "single_random_read_extra_ns": 111.4
+        },
+        "8192": {
+          "dual_random_read_extra_ns": 0.0,
+          "single_random_read_extra_ns": 0.0
+        },
+        "8388608": {
+          "dual_random_read_extra_ns": 28.6,
+          "single_random_read_extra_ns": 21.2
+        }
+      }
+    },
+    "units": {
+      "bandwidth": "MB/s (decimal)",
+      "latency": "nanoseconds above L1"
+    }
+  },
+  "model": {
+    "graph_status": "ok",
+    "onnx_sha256": "1b859164bb3f3946892df069319416c0fb22fd43508c4bf12363d206bed2045e",
+    "quantization_status": "blocked",
+    "source_sha256": "2c07ee086b5450aa8ded56fa6154755d6e049c43cbbfa307af8392ab8ff38008"
+  },
+  "next_gates": [
+    "Run stressapptest, media, network, and storage benchmark scenarios.",
+    "Run OI accuracy evaluation with production preprocessing and labeled segmentation data.",
+    "Install a KRK-compatible Ryzen AI/VitisAI execution provider and prove NPU operator assignment.",
+    "Connect four and then six independent 1080p60 sinks.",
+    "Provide cameras, SFP+ optics/DAC and peer, audio loopback, and OI calibration/evaluation data.",
+    "Run isolated, normal, peak, thermal, and 24-hour reliability scenarios before freezing the native baseline."
+  ],
+  "oi_cpu_performance": {
+    "accuracy_valid": false,
+    "approximate_fps_per_apu_ppt_watt": 0.32155690056682207,
+    "apu_ppt_watts_mean": 22.074254545454547,
+    "fps": 7.098128873959448,
+    "input_source": "deterministic synthetic tensor; performance only",
+    "latency_boundary": "ONNX Runtime session.run only",
+    "latency_ms": {
+      "count": 426,
+      "maximum": 164.286757,
+      "mean": 139.47907608685446,
+      "minimum": 138.565667,
+      "p50": 139.0084375,
+      "p90": 140.6348145,
+      "p95": 140.916187,
+      "p99": 148.42293725
+    },
+    "measured_iterations": 426,
+    "measured_seconds": 60.015816501,
+    "power_warning": "PPT is a sampled APU package-power sensor, not whole-board energy; FPS/W is approximate.",
+    "provider": "CPUExecutionProvider"
+  },
+  "phase": "Phase 5 preliminary native report",
+  "schema_version": 1
+}

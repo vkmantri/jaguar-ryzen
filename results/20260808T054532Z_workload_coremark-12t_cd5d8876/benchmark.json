@@ -1,0 +1,11 @@
+{
+  "iterations": 7200000,
+  "iterations_per_second": 265183.602814,
+  "reporting_line": "265183.602814 / GCC13.3.0 -O2 -O3 -march=native -mtune=native -DMULTITHREAD=12 -DUSE_PTHREAD=1 -pthread -DPERFORMANCE_RUN=1 -DITERATIONS=0 -lrt / Heap / 12:PThreads",
+  "total_seconds": 27.151,
+  "units": {
+    "score": "iterations/second",
+    "time": "seconds"
+  },
+  "validated": true
+}

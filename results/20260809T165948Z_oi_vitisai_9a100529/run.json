@@ -1,0 +1,48 @@
+{
+  "accuracy_reason": "synthetic input is for performance only; no production preprocessing or labels",
+  "accuracy_valid": false,
+  "actual_providers": [
+    "VitisAIExecutionProvider",
+    "CPUExecutionProvider"
+  ],
+  "available_providers": [
+    "VitisAIExecutionProvider",
+    "CPUExecutionProvider"
+  ],
+  "completed_at": "2026-08-09T16:59:58.453014+00:00",
+  "input_source": "deterministic synthetic tensor",
+  "kind": "oi_model_benchmark",
+  "latency_boundary": "ONNX Runtime session.run only; preprocessing and postprocessing excluded",
+  "model_path": "/home/amd/workspace/jaguar-eval/models/oi/int8/oi_xint8.onnx",
+  "npu_verification": {
+    "cpu_operators": 2,
+    "ep_create_failed": false,
+    "ep_load_failed": false,
+    "error_lines": [],
+    "executed_on_npu": true,
+    "fatal_lines": [],
+    "npu_operators": 484,
+    "operators": {
+      "NPU": 484,
+      "VITIS_EP_CPU": 2
+    },
+    "reason": "NPU execution confirmed",
+    "running_on_npu": 1,
+    "subgraphs": {
+      "NPU": 1
+    },
+    "unrecognised_operators": {}
+  },
+  "power_boundary": "on-board sensors only; USB meter not sampled",
+  "provider_options": {
+    "cache_dir": "/home/amd/ryzenai/vaip_cache_int8_opt3",
+    "cache_key": "oi_int8",
+    "enable_cache_file_io_in_mem": "0",
+    "opt_level": "3",
+    "target": "X2"
+  },
+  "requested_provider": "VitisAIExecutionProvider",
+  "run_id": "20260809T165948Z_oi_vitisai_9a100529",
+  "started_at": "2026-08-09T16:59:48.512783+00:00",
+  "status": "ok"
+}

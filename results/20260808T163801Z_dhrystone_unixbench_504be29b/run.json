@@ -1,0 +1,9 @@
+{
+  "copies": [
+    1,
+    12
+  ],
+  "kind": "dhrystone_unixbench",
+  "run_id": "20260808T163801Z_dhrystone_unixbench_504be29b",
+  "status": "ok"
+}
