@@ -1,7 +1,6 @@
 # Jaguar Ryzen Evaluation
 
-Findings and application code from evaluation of the AMD BirmanPlus-KRK2e
-development platform with a Ryzen Embedded V4A46X, RDNA graphics, and a
+Some early work on development platform with a Ryzen Embedded V4A46X, RDNA graphics, and a
 KRK/XDNA2 NPU.
 
 ## Documentation
