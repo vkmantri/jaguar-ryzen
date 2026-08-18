@@ -244,8 +244,7 @@ Two further problems for live use:
 
 A patched copy and a live voice agent built on it are documented in
 `docs/voice-agent/01-voice-agent-findings.md`; the unmodified original is preserved at
-the original AMD `run_whisper.py`, which is not redistributed here. Obtain it
-from AMD's Ryzen AI ASR example.
+`scripts/voice-agent/run_whisper.py.orig`.
 
 ---
 

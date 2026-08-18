@@ -36,33 +36,90 @@ SAMPLE_RATE = 16000
 
 PIPER_BIN = "/home/amd/tts-venv/bin/piper"
 PIPER_VOICE = "/home/amd/piper-voices/en_US-amy-medium.onnx"
-PIPER_RATE = 22050
+PIPER_OUT = "/tmp/voice_agent_tts"
 
 
-def speak(text: str) -> None:
-    """Piper neural TTS streamed straight to aplay; espeak via spd-say as fallback."""
-    if Path(PIPER_BIN).exists() and Path(PIPER_VOICE).exists():
-        piper = subprocess.Popen(
-            [PIPER_BIN, "-m", PIPER_VOICE, "--output-raw"],
+class Speaker:
+    """Resident Piper writing one WAV per utterance, played back synchronously.
+
+    Two constraints have to hold at once. Respawning piper per sentence reloads
+    the 63 MB voice model (0.99 s vs 0.13 s warm), so the process must persist.
+    But playback must also block: if it does not, the recorder reopens while the
+    reply is still audible, captures it, and every following turn transcribes to
+    nothing. Writing per-utterance WAVs gives both a warm model and a clean
+    boundary to wait on.
+    """
+
+    def __init__(self) -> None:
+        self.piper = None
+        self.out = Path(PIPER_OUT)
+        if not (Path(PIPER_BIN).exists() and Path(PIPER_VOICE).exists()):
+            return
+        self.out.mkdir(parents=True, exist_ok=True)
+        for stale in self.out.glob("*.wav"):
+            stale.unlink()
+        self.piper = subprocess.Popen(
+            [PIPER_BIN, "-m", PIPER_VOICE, "-d", str(self.out), "--output-dir-naming", "timestamp"],
             stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
+            stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
+            text=True,
         )
-        player = subprocess.Popen(
-            ["aplay", "-q", "-r", str(PIPER_RATE), "-f", "S16_LE", "-t", "raw", "-c", "1"],
-            stdin=piper.stdout,
-            stderr=subprocess.DEVNULL,
-        )
-        piper.stdout.close()  # type: ignore[union-attr]
-        piper.communicate(text.encode())
-        player.wait()
-        return
-    subprocess.run(["spd-say", "-w", text], check=False)
+
+    def warm_up(self) -> None:
+        if self.piper is not None:
+            self.say("Ready.", play=False)
+
+    def say(self, text: str, play: bool = True) -> None:
+        text = text.strip()
+        if not text:
+            return
+        if self.piper is None:
+            subprocess.run(["spd-say", "-w", text], check=False)
+            return
+        before = {p.name for p in self.out.glob("*.wav")}
+        self.piper.stdin.write(text + "\n")  # type: ignore[union-attr]
+        self.piper.stdin.flush()  # type: ignore[union-attr]
+
+        wav = self._wait_for_wav(before)
+        if wav is None:
+            return
+        if play:
+            subprocess.run(["aplay", "-q", str(wav)], stderr=subprocess.DEVNULL, check=False)
+        wav.unlink(missing_ok=True)
+
+    def _wait_for_wav(self, before: set[str], timeout: float = 20.0) -> Path | None:
+        deadline = time.time() + timeout
+        while time.time() < deadline:
+            new = [p for p in self.out.glob("*.wav") if p.name not in before]
+            if new:
+                wav = new[0]
+                last = -1
+                while time.time() < deadline:
+                    size = wav.stat().st_size
+                    if size == last and size > 44:
+                        return wav
+                    last = size
+                    time.sleep(0.01)
+                return wav
+            time.sleep(0.005)
+        return None
+
+    def close(self) -> None:
+        if self.piper is None:
+            return
+        try:
+            if self.piper.stdin:
+                self.piper.stdin.close()
+            self.piper.wait(timeout=5)
+        except (OSError, subprocess.TimeoutExpired):
+            self.piper.kill()
 
 
 def record_until_silence(
     silence_threshold: float, silence_seconds: float, max_seconds: float, startup_grace: float
-) -> np.ndarray:
+) -> tuple[np.ndarray, float]:
+    """Returns the audio and the perf_counter timestamp at which speech stopped."""
     frames: queue.Queue[np.ndarray] = queue.Queue()
 
     def callback(indata, _frames, _time, status):
@@ -71,6 +128,7 @@ def record_until_silence(
     collected: list[np.ndarray] = []
     started = time.time()
     last_voice = None
+    last_voice_perf = None
     heard = False
 
     with sd.InputStream(samplerate=SAMPLE_RATE, channels=1, dtype="float32", callback=callback):
@@ -87,6 +145,7 @@ def record_until_silence(
                         print("  ...speech detected")
                     heard = True
                     last_voice = now
+                    last_voice_perf = time.perf_counter()
             if now - started > max_seconds:
                 break
             if heard and last_voice is not None and now - last_voice >= silence_seconds:
@@ -97,8 +156,9 @@ def record_until_silence(
                 break
 
     if not collected:
-        return np.zeros(0, dtype=np.float32)
-    return np.concatenate(collected, axis=0).reshape(-1).astype(np.float32)
+        return np.zeros(0, dtype=np.float32), time.perf_counter()
+    ended = last_voice_perf if last_voice_perf is not None else time.perf_counter()
+    return np.concatenate(collected, axis=0).reshape(-1).astype(np.float32), ended
 
 
 class Responder:
@@ -181,10 +241,22 @@ def main() -> int:
     )
     parser.add_argument("--max-new-tokens", type=int, default=60)
     parser.add_argument("--silence-threshold", type=float, default=0.01)
-    parser.add_argument("--silence-seconds", type=float, default=1.0)
+    parser.add_argument("--silence-seconds", type=float, default=0.8)
     parser.add_argument("--max-seconds", type=float, default=30.0)
     parser.add_argument("--startup-grace", type=float, default=25.0)
     parser.add_argument("--turns", type=int, default=0)
+    parser.add_argument(
+        "--wake-word",
+        # Whisper transcribes the brand phonetically, so accept the homophones too.
+        default="hey deere,hey dear,hey deer,hello deere,hello dear,hello deer,ok deere,ok dear",
+        help="comma-separated wake phrases, matched case-insensitively",
+    )
+    parser.add_argument(
+        "--sleep-after",
+        type=float,
+        default=60.0,
+        help="seconds of no successful interaction before requiring the wake word",
+    )
     args = parser.parse_args()
 
     from run_whisper import WhisperONNX, download_whisper_onnx, load_provider_options
@@ -207,15 +279,40 @@ def main() -> int:
     llm = Responder(args.llm_model, args.max_new_tokens, args.llm_worker, args.llm_env)
     print(f"  LLM ready in {time.perf_counter() - started:.1f} s")
 
-    speak("Assistant ready. Ask me something.")
+    speaker = Speaker()
+    started = time.perf_counter()
+    speaker.warm_up()
+    print(f"  TTS ready in {time.perf_counter() - started:.1f} s")
+
+    speaker.say("Deere ready. Ask me something.")
     print("\n=== voice assistant: Ctrl-C to quit ===")
 
+    wake_words = [w.strip().lower() for w in args.wake_word.split(",") if w.strip()]
+
+    def is_wake(text: str) -> bool:
+        low = text.lower()
+        return any(w in low for w in wake_words)
+
+    def strip_wake(text: str) -> str:
+        low = text.lower()
+        for w in wake_words:
+            index = low.find(w)
+            if index != -1:
+                return (text[:index] + text[index + len(w) :]).strip(" ,.!?")
+        return text
+
+    awake = True
+    last_interaction = time.monotonic()
     turn = 0
     try:
         while args.turns == 0 or turn < args.turns:
             turn += 1
-            print(f"\n[turn {turn}] listening ...")
-            audio = record_until_silence(
+            if awake and time.monotonic() - last_interaction > args.sleep_after:
+                awake = False
+                print(f"  (idle {args.sleep_after:.0f}s -- sleeping, say '{wake_words[0]}' to wake)")
+            state = "listening" if awake else "asleep"
+            print(f"\n[turn {turn}] {state} ...")
+            audio, speech_ended = record_until_silence(
                 args.silence_threshold, args.silence_seconds, args.max_seconds, args.startup_grace
             )
             seconds = len(audio) / SAMPLE_RATE
@@ -227,9 +324,23 @@ def main() -> int:
             asr_seconds = time.perf_counter() - started
             heard = (heard or "").strip()
             print(f"  heard ({asr_seconds:.2f}s, RTF {asr_seconds / seconds:.2f}): {heard!r}")
+
+            if not awake:
+                if not is_wake(heard):
+                    continue  # stay silent; ambient noise must not trigger a reply
+                awake = True
+                last_interaction = time.monotonic()
+                heard = strip_wake(heard)
+                if not heard:
+                    speaker.say("Yes?")
+                    continue
+            elif is_wake(heard):
+                heard = strip_wake(heard) or heard
+
             if not heard:
-                speak("I did not catch that.")
+                # Silence and noise are common; only answer when there were words.
                 continue
+            last_interaction = time.monotonic()
 
             # Speaking each sentence as it arrives hides most of the generation time.
             spoke_any = False
@@ -241,22 +352,27 @@ def main() -> int:
                     speech_started = time.perf_counter()
                 spoke_any = True
                 print(f"  ...speaking: {chunk!r}")
-                speak(chunk)
+                speaker.say(chunk)
 
-            turn_started = time.perf_counter()
             answer, llm_seconds, tokens, _first_chunk = llm.reply(heard, on_chunk=say_chunk)
             rate = tokens / llm_seconds if llm_seconds else 0.0
-            latency = (speech_started - turn_started) if speech_started else llm_seconds
-            print(
-                f"  reply ({llm_seconds:.2f}s, {tokens} tok, {rate:.1f} tok/s | "
-                f"first audio at {latency:.2f}s): {answer!r}"
-            )
             if not spoke_any:
-                speak(answer or "Sorry, I have no answer.")
+                speech_started = time.perf_counter()
+                speaker.say(answer or "Sorry, I have no answer.")
+            # Measured from when the speaker stopped talking, so it matches a stopwatch.
+            end_to_end = (speech_started or time.perf_counter()) - speech_ended
+            print(
+                f"  reply ({llm_seconds:.2f}s, {tokens} tok, {rate:.1f} tok/s): {answer!r}"
+            )
+            print(
+                f"  END-TO-END speech-end -> audio-out: {end_to_end:.2f}s "
+                f"(silence {args.silence_seconds:.1f} + asr {asr_seconds:.2f} + llm {llm_seconds:.2f})"
+            )
     except KeyboardInterrupt:
         print("\nstopped")
     finally:
         llm.close()
+        speaker.close()
     return 0
 
 

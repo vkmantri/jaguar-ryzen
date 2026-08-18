@@ -83,8 +83,7 @@ exists. Mic mode cannot work as shipped.
 
 **Fix:** move the import to module scope. Our patch also makes the silence parameters
 overridable (see Issue 3). The unmodified original is kept at
-the original AMD `run_whisper.py`. It is not redistributed in this repository;
-obtain it with the AMD Ryzen AI ASR example.
+`scripts/voice-agent/run_whisper.py.orig`.
 
 ### Issue 3 — 5-second silence timeout is too aggressive for live use
 
@@ -161,7 +160,7 @@ environment provides.
 | Voice agent (ASR + LLM + TTS) | `scripts/voice-agent/voice_assistant.py` |
 | Isolated LLM worker | `scripts/voice-agent/llm_server.py` |
 | Transcribe-and-echo demo (no LLM) | `scripts/voice-agent/voice_loop.py` |
-| Unmodified AMD demo, for diffing | Obtain `run_whisper.py` from AMD's Ryzen AI ASR example |
+| Unmodified AMD demo, for diffing | `scripts/voice-agent/run_whisper.py.orig` |
 | Combined environment | `scripts/asr/voice-assistant-env.sh` |
 
 ---
