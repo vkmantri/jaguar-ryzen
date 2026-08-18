@@ -12,8 +12,7 @@ KRK/XDNA2 NPU.
 - [Phi-3.5 LLM findings](docs/llm/01-llm-phi35-findings.md)
 - [Voice-agent findings](docs/voice-agent/01-voice-agent-findings.md)
 
-## Application Code
-
+## Scripts
 - `scripts/voice-agent/`: microphone-to-ASR-to-LLM-to-TTS voice assistant
 - `scripts/asr/`: Whisper CPU/NPU benchmark and combined runtime environment
 - `scripts/llm/`: Phi-3.5 OGA benchmark and runtime environment
@@ -22,18 +21,3 @@ KRK/XDNA2 NPU.
 The voice agent expects AMD's `run_whisper.py` and downloaded model/runtime
 assets to be installed separately. Those vendor and model files are not
 redistributed here.
-
-## Results
-
-`results/` contains compact structured JSON and Markdown evidence referenced by
-the findings. Raw tensor dumps, telemetry streams, compiler logs, downloaded
-models, vendor packages, and external benchmark sources are intentionally
-excluded.
-
-CPU and memory benchmark implementation code and the general profiling harness
-are also excluded; only their result artifacts and findings are published.
-
-## Scope
-
-No board user-guide PDFs, customer ONNX models, quantized model binaries,
-private keys, credentials, or third-party binary packages are tracked.
