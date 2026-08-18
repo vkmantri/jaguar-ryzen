@@ -1,242 +1,349 @@
-# OI on AMD Ryzen Embedded V4A46X (Jaguar P122a) — Performance Findings
+# Performance Findings
 
-**Date:** 2026-08-09
-**Board:** Jaguar P122a devkit, `BirmanPlus-KRK2e`, BIOS RIJ0071C
+**Board:** Jaguar P122a devkit, BirmanPlus-KRK2e, BIOS RIJ0071C
+
 **SoC:** AMD Ryzen Embedded V4A46X, 6 cores / 12 threads
-**NPU:** `1022:17f0` rev `0x20` → `NPU Krackan 2` (npu6), `aie2p`, 6×8 tile array, firmware 1.1.2.64
+
+**NPU:** 1022:17f0 rev 0x20 → NPU Krackan 2 (npu6), aie2p, 6×8 tile array, firmware 1.1.2.64
+
 **OS:** Ubuntu 24.04.4 LTS, kernel 7.0.0-28-generic
-**Model:** OI — fully convolutional, 127 nodes, opset 17, input `[1,3,576,960]` fp32 → output `[1,4,576,960]` fp32
+
+**Displays:** 10 DRM endpoints exposed (including eDP/writeback). When it comes to displays, this part is just awesome. You can have up to 10 displays.
 
 ---
 
-## 1. Headline numbers
+# CPU & Display Graphics
 
-All figures are single-stream, 30-second measured windows, telemetry sampled at 0.5 s.
-Every NPU run is **verified** to have executed on the NPU (see §5).
+## Idle Baseline
 
-| Configuration | FPS | Latency p50 | Latency p99 | SoC power | CPU load |
-|---|---:|---:|---:|---:|---:|
-| CPU fp32, 12 threads | 5.69 | 168.80 ms | 222.11 ms | 21.28 W | 99.7 % |
-| NPU BF16, `optimize_level 3` | 16.83 | 57.99 ms | 60.49 ms | 9.46 W | 7.7 % |
-| **NPU INT8 (XINT8), `opt_level 3`** | **42.13** | **23.16 ms** | **24.76 ms** | **14.00 W** | **8.7 %** |
+- Aggregate CPU utilization: 0.238%
+- GPU busy: 0.0%
+- AMDGPU hwmon mean power: 3.196 W
+- Temperature sensors:
+  - ACPI: ~66 °C
+  - AMDGPU: ~17 °C
 
-**Relative to the CPU baseline:**
+## Dhrystone
 
-| | Throughput | Latency | SoC power |
-|---|---:|---:|---:|
-| NPU BF16 | **2.96×** faster | 2.91× lower | 0.44× |
-| NPU INT8 | **7.40×** faster | 7.29× lower | 0.66× |
+### Telemetry-backed single process
+
+- 70,733,882.0 loops/s
+- 40,258.3 DMIPS
+
+### Mean sampled APU PPT
+
+- 6.905 W
+
+### Official UnixBench median
+
+| Configuration | Result |
+|--------------|---------|
+| One copy | 70,800,848.0 loops/s (40,296.4 DMIPS) |
+| 12 copies | 512,613,131.1 loops/s (291,754.8 aggregate DMIPS) |
+
+- 12-copy scaling: **7.240×**
+- Parallel efficiency: **60.34%**
+
+## STREAM DDR Bandwidth
+
+Each result uses three 610.4 MiB arrays (1.8 GiB total), 20 repetitions, and reports the best validated rate in decimal MB/s.
+
+| Threads | Copy MB/s | Scale MB/s | Add MB/s | Triad MB/s |
+|----------|----------:|-----------:|---------:|-----------:|
+| 1 | 54,999.4 | 38,957.6 | 41,087.1 | 41,223.8 |
+| 2 | 75,422.3 | 50,229.3 | 53,421.1 | 53,296.3 |
+| 4 | 77,439.3 | 48,950.2 | 51,751.9 | 51,535.3 |
+| 6 | 73,357.1 | 45,567.8 | 49,147.5 | 49,021.8 |
+| 12 | 70,773.1 | 42,203.8 | 46,852.0 | 46,679.0 |
+
+## CoreMark CPU Scaling
+
+> PPT efficiency is approximate because power is sampled over the whole process, including setup, rather than integrated over only the CoreMark timed region.
+
+| Threads | CoreMark iter/s | CPU util % | APU PPT W |
+|-----------|---------------:|-----------:|----------:|
+| 1 | 35,463.089 | 8.221 | 7.189 |
+| 6 | 173,761.946 | 41.724 | 12.350 |
+| 12 | 265,183.603 | 81.958 | 17.271 |
+
+## VkPeak
+
+| Metric | Result |
+|----------|---------|
+| fp32-scalar | 1428.16 GFLOPS |
+| fp32-vec4 | 978.43 GFLOPS |
+| fp16-scalar | 1423.27 GFLOPS |
+| fp16-vec4 | 2267.00 GFLOPS |
+| fp16-matrix | 4371.25 GFLOPS |
+| fp64-scalar | 37.51 GFLOPS |
+| fp64-vec4 | 37.20 GFLOPS |
+| int32-scalar | 240.98 GIOPS |
+| int32-vec4 | 238.89 GIOPS |
+| int16-scalar | 1277.97 GIOPS |
+| int16-vec4 | 2329.20 GIOPS |
+| int64-scalar | 80.26 GIOPS |
+| int64-vec4 | 66.23 GIOPS |
+| int8-dotprod | 4048.03 GIOPS |
+| int8-matrix | 4535.94 GIOPS |
+| bf16-dotprod | 0.00 GFLOPS |
+| bf16-matrix | 0.00 GFLOPS |
+| fp8-matrix | 0.00 GFLOPS |
+| bf8-matrix | 0.00 GFLOPS |
+| copy-h2h | 18.64 GB/s |
+| copy-h2d | 15.38 GB/s |
+| copy-d2h | 19.00 GB/s |
+| copy-d2d | 49.69 GB/s |
+
+## VkMark
+
+```text
+=======================================================
+    vkmark 2025.01
+=======================================================
+    Vendor ID:      0x1002
+    Device ID:      0x1902
+    Device Name:    AMD Ryzen Embedded V4A46X (RADV GFX1153)
+    Driver Version: 104865800
+    Device UUID:    81083e57af5de00212308be7d6da98cf
+=======================================================
+[vertex] device-local=true: FPS: 24442 FrameTime: 0.041 ms
+[vertex] device-local=false: FPS: 24454 FrameTime: 0.041 ms
+[texture] anisotropy=0: FPS: 17257 FrameTime: 0.058 ms
+[texture] anisotropy=16: FPS: 16424 FrameTime: 0.061 ms
+[shading] shading=gouraud: FPS: 14095 FrameTime: 0.071 ms
+[shading] shading=blinn-phong-inf: FPS: 13502 FrameTime: 0.074 ms
+[shading] shading=phong: FPS: 12977 FrameTime: 0.077 ms
+[shading] shading=cel: FPS: 12580 FrameTime: 0.079 ms
+[effect2d] kernel=edge: FPS: 3246 FrameTime: 0.308 ms
+[effect2d] kernel=blur: FPS: 1164 FrameTime: 0.859 ms
+[desktop] <default>: FPS: 4846 FrameTime: 0.206 ms
+[cube] <default>: FPS: 12094 FrameTime: 0.083 ms
+[clear] <default>: FPS: 7233 FrameTime: 0.138 ms
+=======================================================
+                                   vkmark Score: 12639
+=======================================================
+```
 
 ---
 
-## 2. Performance per watt
+# Machine Learning Performance
 
-Two framings, because they answer different questions.
+## Model
 
-**Total SoC power** (`amdgpu` hwmon `PPT`, whole-package) — what the system actually draws:
+**OI**
 
-| Configuration | FPS | SoC power | FPS per watt | Energy per frame |
-|---|---:|---:|---:|---:|
-| CPU fp32 | 5.69 | 21.28 W | 0.27 | 3737 mJ |
-| NPU BF16 | 16.83 | 9.46 W | 1.78 | 562 mJ |
-| **NPU INT8** | 42.13 | 14.00 W | **3.01** | **332 mJ** |
+- Fully convolutional
+- 127 nodes
+- Opset 17
+- Input: `[1,3,576,960]` FP32
+- Output: `[1,4,576,960]` FP32
 
-**Incremental over idle** (idle PPT = 8.04 W) — the marginal cost of the inference itself:
+## 1. Headline Numbers
 
-| Configuration | Incremental power | FPS per incremental watt |
-|---|---:|---:|
-| CPU fp32 | 13.24 W | 0.43 |
-| **NPU BF16** | **1.42 W** | **11.82** |
-| NPU INT8 | 5.96 W | 7.07 |
+All figures are single-stream, measured over 30-second windows and sampled every 0.5 seconds.
 
-**Energy per frame is the clearest single metric: INT8 on the NPU uses 332 mJ/frame versus
-3737 mJ/frame on the CPU — an 11.3× reduction.**
+| Configuration | FPS | Latency p50 | Latency p99 | SoC Power | CPU Load |
+|---------------|----:|------------:|------------:|----------:|---------:|
+| NPU BF16, optimize_level 3 | 16.83 | 57.99 ms | 60.49 ms | 9.46 W | 7.7% |
+| NPU INT8 (XINT8), optimize_level 3 | 42.13 | 23.16 ms | 24.76 ms | 14.00 W | 8.7% |
 
-Note the two framings disagree on the winner. INT8 wins on absolute performance-per-watt,
-but **BF16 has the lowest marginal power draw of any option** (1.42 W over idle). For a
-thermally or battery constrained deployment where OI need only hit ~16 FPS, BF16 is the more
-efficient choice despite lower throughput.
+---
 
-### Dedicated NPU power rail
+## 2. Performance per Watt
 
-The `amdxdna` driver exposes a separate NPU rail (`/sys/class/hwmon/hwmon4/power1_input`,
-label `NPU_power`), world-readable:
+### Total SoC Power (AMDGPU hwmon PPT)
 
-| Configuration | NPU rail mean | NPU rail max |
-|---|---:|---:|
+CPU FP32 was run to establish a baseline using the same OI model.
+
+| Configuration | FPS | SoC Power | FPS/W |
+|--------------|----:|----------:|------:|
+| CPU FP32 | 5.69 | 21.28 W | 0.27 |
+| NPU BF16 | 16.83 | 9.46 W | 1.78 |
+| NPU INT8 | 42.13 | 14.00 W | 3.01 |
+
+**Observations**
+
+- INT8 wins on absolute performance-per-watt.
+- BF16 has the lowest marginal power draw, only **1.42 W above idle**.
+
+### Dedicated NPU Power Rail
+
+The amdxdna driver exposes a separate NPU rail:
+
+```text
+/sys/class/hwmon/hwmon4/power1_input
+```
+
+Label: `NPU_power`
+
+| Configuration | NPU Rail Mean | NPU Rail Max |
+|--------------|--------------:|-------------:|
 | Idle | 0.000 W | 0.000 W |
-| CPU fp32 run | 0.004 W | 0.090 W |
+| CPU FP32 Run | 0.004 W | 0.090 W |
 | NPU BF16 | 0.416 W | 0.691 W |
 | NPU INT8 | 1.724 W | 1.800 W |
 
-The NPU rail reads ~0 W during CPU inference, which independently corroborates that the CPU
-runs were genuinely not touching the NPU, and vice versa.
+The NPU rail remains approximately zero during CPU inference, independently verifying that CPU-only runs do not exercise the NPU.
 
 ---
 
-## 3. The CPU offload argument
+## 3. Compiler Settings Dominate BF16 Performance
 
-The throughput numbers understate the benefit. During CPU inference the SoC sits at
-**99.7 % CPU utilisation across all 12 threads** — the machine has nothing left for
-application work. NPU inference runs at **7.7–8.7 % CPU**.
+The largest performance swing measured during evaluation was driven by compiler optimization level rather than precision.
 
-For an embedded workload where OI is one stage in a larger pipeline, this matters more than
-the raw multiplier: the NPU path leaves essentially the entire CPU free.
+| BF16 Configuration | FPS | p50 Latency | Compile Time |
+|------------------|----:|------------:|-------------:|
+| optimize_level 1, preferred_data_storage=auto | 2.80 | 352.37 ms | 423 s |
+| optimize_level 1, preferred_data_storage=vectorized | 2.80 | 352.33 ms | 425 s |
+| optimize_level 3, preferred_data_storage=vectorized | 17.05 | 57.63 ms | 803 s |
 
-The NPU is also markedly more deterministic:
+**Results**
 
-| Configuration | p50 | p99 | max | spread (max−min) |
-|---|---:|---:|---:|---:|
-| CPU fp32 | 168.80 ms | 222.11 ms | 285.20 ms | **128.68 ms** |
-| NPU BF16 | 57.99 ms | 60.49 ms | 61.50 ms | 5.55 ms |
-| NPU INT8 | 23.16 ms | 24.76 ms | 26.12 ms | **4.00 ms** |
+- optimize_level 1 → 3 yields a **6.1× speedup**
+- optimize_level 1 is the documented default
+- At optimize_level 1, NPU performance is slower than the CPU (2.80 FPS vs 5.69 FPS)
+- At optimize_level 3, the NPU becomes significantly faster
 
-The CPU's p99 is 32 % above its median and its worst case is 69 % above. The NPU's p99 is
-within 7 % of median. For a real-time pipeline with a frame deadline, the NPU's tail
-behaviour is the more valuable property.
+**Tradeoff**
 
----
-
-## 4. Compiler settings dominate BF16 performance
-
-The single largest effect measured in this evaluation was **not** precision — it was the
-compiler optimisation level.
-
-| BF16 configuration | FPS | p50 | Compile time |
-|---|---:|---:|---:|
-| `optimize_level 1`, `preferred_data_storage auto` | 2.80 | 352.37 ms | 423 s |
-| `optimize_level 1`, `preferred_data_storage vectorized` | 2.80 | 352.33 ms | 425 s |
-| **`optimize_level 3`, `preferred_data_storage vectorized`** | **17.05** | **57.63 ms** | 803 s |
-
-- `optimize_level 1` → `3` is a **6.1× speedup**.
-- `optimize_level 1` is the **documented default**. With it, the NPU is *slower than the CPU*
-  (2.80 vs 5.69 FPS). At level 3 it is 3× faster. Anyone benchmarking with defaults would
-  reach the opposite conclusion about this hardware.
-- `preferred_data_storage` made **no measurable difference** (352.37 vs 352.33 ms), despite
-  the documentation recommending `vectorized` for CNNs.
-- Cost: opt3 roughly doubles compile time. This is one-time and cached.
-
-For INT8 the same knob is nearly irrelevant: `opt_level` 0 → 3 moved FPS from 40.47 to 41.84
-(+3 %). **The two precisions have completely different tuning sensitivity.**
+- Optimization level 3 approximately doubles compile time
+- Compilation is a one-time cost and the result is cached
 
 ---
 
-## 5. Execution verification
+## 4. What Was Not Measured
 
-Every NPU figure in this report is backed by evidence that the work actually ran on the NPU.
-This mattered: an early run printed `Test Finished` with exit code 0 while having silently
-fallen back to CPU (see the issues report, Problem 1).
-
-Two independent mechanisms:
-
-**Compiler partitioning report** (cold compile only):
-
-| Model | NPU operators | CPU operators | Subgraphs |
-|---|---:|---:|---:|
-| OI BF16 | `VAIML` 122 | 0 | 1 |
-| OI INT8 | `NPU` 484 | `VITIS_EP_CPU` 2 | — |
-
-The INT8 model's 2 CPU nodes are `QuantizeLinear` and `DequantizeLinear` at the graph
-boundary — input fp32→int8 and output int8→fp32 conversion. Confirmed via the operator
-assignment report. Every interior operator is on the NPU. The node count differs (486 vs 127)
-because QDQ pairs inflate the quantized graph.
-
-**Driver hardware context** (works with a warm cache, where nothing is compiled and no log
-markers are emitted):
-
-```
-xrt-smi examine --report aie-partitions
-  pid 103599, context_id 1, status Active, columns [0..7]
-  command_submissions / command_completions incrementing
-```
-
-The 30-second power runs above were all verified this way.
+- **iGPU inference:** No result. There is currently no ONNX inference path to the iGPU on Linux.
+- **Multi-stream or batched throughput:** All tests use batch size 1.
+- **Thermal sustainability:** Measurements were limited to 30-second runs.
+- **Wall power:** Power measurements come from on-SoC sensors rather than an external meter.
 
 ---
 
-## 6. Accuracy status — read before quoting these numbers
+## 5. Device-Level NPU Capability
 
-- **BF16: no accuracy caveat from the conversion process.** FP32→BF16 is performed by the
-  compiler with no calibration data required.
-- **INT8: latency and FPS are valid; accuracy is NOT established.** `oi_data.npz` contains a
-  **single image**. INT8 post-training quantization derives activation ranges from calibration
-  data, and one sample is not representative. This is recorded in
-  `models/oi/int8/oi_xint8.metadata.json` as `accuracy_valid: false`.
-- Numerical output has not been compared against a reference for either precision. A CPU fp32
-  golden reference exists at `results/20260809T004132Z_oi_reference_0f02baa9/` (verified
-  deterministic: two runs agree to 0.0 absolute difference), so this comparison is ready to run.
-- The preprocessing normalisation used by OI at training time is **unknown**; the benchmark
-  uses an explicit, recorded scheme. This does not affect timing.
-
-**To make INT8 accuracy meaningful, a representative calibration set (typically 100–1000
-images) is required.**
-
----
-
-## 7. What was not measured
-
-- **iGPU: no result.** There is no ONNX inference path to the iGPU on Linux. See the issues
-  report for the full explanation and evidence.
-- **Multi-stream / batched throughput.** All figures are single-stream, batch 1.
-- **Thermal sustained behaviour.** Runs were 30 s; no soak test was performed.
-- **Wall power.** All power figures are from on-die sensors, not an external meter.
-
----
-
-## 8. Reproducing
-
-```bash
-source scripts/ryzenai-env.sh
-export PYTHONPATH=$PWD/src
-
-# INT8
-python -m jaguar_eval model-benchmark --model models/oi/int8/oi_xint8.onnx \
-  --provider vitisai --vai-target X2 --vai-opt-level 3 \
-  --cache-dir /home/amd/ryzenai/vaip_cache_int8_opt3 --cache-key oi_int8 \
-  --warmup 10 --iterations 0 --minimum-duration 30 --telemetry-interval 0.5
-
-# BF16
-python -m jaguar_eval model-benchmark --model models/oi/2c07ee086b5450aa/oi.onnx \
-  --provider vitisai --vai-config config/vai_ep_bf16_vectorized_opt3.json \
-  --cache-dir /home/amd/ryzenai/vaip_cache_vectorized_opt3 --cache-key oi_bf16 \
-  --warmup 10 --iterations 0 --minimum-duration 30 --telemetry-interval 0.5
-
-# CPU baseline
-python -m jaguar_eval model-benchmark --model models/oi/2c07ee086b5450aa/oi.onnx \
-  --provider cpu --warmup 5 --iterations 0 --minimum-duration 30 --telemetry-interval 0.5
-```
-
-A run fails loudly rather than reporting CPU numbers as NPU results; pass
-`--allow-cpu-fallback` only if you deliberately want the unverified behaviour.
-
-### Source runs for every figure
-
-| Figure set | Run directory |
-|---|---|
-| CPU fp32 + power | `results/20260809T174053Z_oi_cpu_8f1f73aa` |
-| NPU BF16 opt3 + power | `results/20260809T174022Z_oi_vitisai_02690af0` |
-| NPU INT8 opt3 + power | `results/20260809T173951Z_oi_vitisai_8ad1544f` |
-| Idle power baseline | `results/20260809T174211Z_telemetry_idle_0083aca1` |
-| BF16 opt1 (auto) | `results/20260809T061105Z_oi_vitisai_886fa797` |
-| BF16 opt1 (vectorized) | `results/20260809T062117Z_oi_vitisai_7193284d` |
-| BF16 opt3 (100 iterations) | `results/20260809T062859Z_oi_vitisai_f57d2fa8` |
-| INT8 opt0 (100 iterations) | `results/20260809T165937Z_oi_vitisai_477a26a0` |
-| INT8 opt3 (100 iterations) | `results/20260809T165948Z_oi_vitisai_9a100529` |
-| CPU fp32 golden output | `results/20260809T004132Z_oi_reference_0f02baa9` |
-| NPU hardware validation (`xrt-smi`) | `results/20260808T182702Z_npu_xrt-validate_008dbbcc` |
-
----
-
-## 9. Device-level NPU capability
-
-For context, `xrt-smi validate` synthetic kernels on this NPU:
+According to `xrt-smi validate` synthetic kernels:
 
 | Test | Result |
-|---|---|
+|--------|---------|
 | GEMM INT8 | 5.7 TOPS |
 | Latency | 53.0 µs |
 | Throughput | 82,310 op/s |
 
-The driver also reports a live `gops` figure per hardware context (84 GOPS observed during
-INT8 OI inference). Note this is far below the 5.7 TOPS synthetic peak — OI at 576×960 is not
-a GEMM-shaped workload, and this gap is the main indicator of remaining headroom.
+---
+
+# Language Models
+
+## Phi-3.5-mini-instruct
+
+### 1. Result
+
+The LLM runs on the NPU.
+
+This was verified independently of benchmark output. The driver reported:
+
+- 247 active NPU hardware-context samples
+- 883 command submissions
+
+during execution.
+
+### Performance
+
+| Metric | Value |
+|----------|---------|
+| Prompt processing (TTFT), avg | 237,487 µs (237.5 ms) |
+| Prompt processing throughput | 538.98 tokens/s |
+| Token generation, avg | 66,883.8 µs/token (14.95 tokens/s) |
+| Token generation, p50 | 66,164.4 µs |
+| Token sampling | 70.5 µs (14,186 tokens/s) |
+| E2E generation loop, avg | 8665.0 ms |
+| E2E generation loop, p50/stddev | 8662.1 ms / 14.2 ms |
+| Peak working set | 12,713,615,360 B (11.84 GiB) |
+| Wall clock (5 repetitions + warmup) | 67.1 s |
+
+### Configuration
+
+- Batch size: 1
+- Prompt length: 128 tokens
+- Generation length: 128 tokens
+- Repetitions: 5
+- Warmup runs: 1
+
+### Power
+
+| Rail | Mean | Max |
+|--------|-----:|----:|
+| SoC Package (AMDGPU PPT) | 15.34 W | 17.03 W |
+| NPU Rail (amdxdna NPU_power) | 1.53 W | 1.77 W |
+
+Idle baseline:
+
+- SoC: 8.04 W
+- NPU: 0.000 W
+
+LLM inference therefore adds approximately:
+
+- **7.3 W above idle**
+
+(126 samples at 0.5-second intervals)
+
+---
+
+## 2. Comparison with AMD's Documented Expected Output
+
+| Metric | This Board (Krackan) | AMD Example | Ratio |
+|----------|-----------------:|-----------:|------:|
+| Time to First Token | 237,487 µs | 169,860 µs | 1.40× slower |
+| Prompt Processing | 538.98 tok/s | 753.56 tok/s | 0.72× |
+| Token Generation | 14.95 tok/s | 49.13 tok/s | 0.30× |
+| E2E Generation Loop | 8665.0 ms | 2755.09 ms | 3.15× slower |
+| Peak Working Set | 11.84 GiB | 3.30 GiB | 3.59× larger |
+
+AMD's documentation does not state which device produced the reference measurements. Therefore, the gap cannot be attributed to hardware differences with certainty.
+
+### Tuning Attempted: No Effect
+
+Given the substantial impact of compiler optimization in CNN workloads, several tuning options were evaluated.
+
+| Variant | Token Generation | E2E | Peak Working Set |
+|----------|----------------:|----:|-----------------:|
+| Default | 14.95 tok/s | 8665.0 ms | 12,713,615,360 B |
+| `-ml 256` | 14.94 tok/s | 8672.0 ms | 12,718,346,240 B |
+| `--reuse_generator` | 14.94 tok/s | 8669.5 ms | 12,731,240,448 B |
+
+All three configurations produced results within 0.1% of each other.
+
+Unlike the CNN workflow, this model arrives pre-quantized and pre-compiled from Hugging Face, leaving no compiler optimization level available to tune.
+
+---
+
+## Most Likely Explanation: Memory Bandwidth
+
+INT4 LLM token generation is generally memory-bandwidth bound because each generated token requires repeated streaming of model weights.
+
+Measured STREAM bandwidth on this system:
+
+| Kernel | Best Rate |
+|----------|----------:|
+| Copy | 70,773 MB/s |
+| Add | 46,852 MB/s |
+| Scale | 42,204 MB/s |
+
+If AMD's published results were generated on a Strix Halo platform (~256-bit LPDDR5X, roughly 256 GB/s memory bandwidth), the memory bandwidth ratio would be approximately:
+
+```text
+256 / 70.8 ≈ 3.6×
+```
+
+Observed token-generation slowdown:
+
+```text
+49.13 / 14.95 ≈ 3.29×
+```
+
+The two ratios are remarkably close.
+
+This is an inference, not a verified conclusion, because AMD does not disclose the platform used for their reference measurements.
+
+Validating the hypothesis would require executing the identical model on a known Strix or Strix Halo system.
+
