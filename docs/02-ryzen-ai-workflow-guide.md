@@ -2,11 +2,6 @@
 
 **Target:** AMD Ryzen Embedded V4A46X / Krackan Point NPU (`npu6`), Ubuntu 24.04, kernel 7.0.0-28
 **Software:** Ryzen AI 1.8.0 for Linux, XRT 2.25.37, amdxdna DKMS 0.15
-
-This guide is written to be followed start to finish. Steps marked **⚠ DOC BUG** are places
-where the official AMD documentation is wrong or incomplete on this platform — those cost the
-most time, so read them before you hit them.
-
 ---
 
 ## 1. The stack
@@ -57,7 +52,7 @@ flowchart TB
 ```
 
 The red box is the thing to watch: if the VitisAI EP fails to load for any reason, ONNX
-Runtime **falls back to CPU silently**, prints one error line, and still exits 0.
+Runtime falls back to CPU silently, prints one error line, and still exits 0.
 
 ---
 
@@ -96,12 +91,12 @@ flowchart LR
 
 | | BF16 | INT8 |
 |---|---|---|
-| Calibration data | not required | **required** (100–1000 representative samples) |
+| Calibration data | not required | required (100–1000 representative samples) |
 | Accuracy risk | low | depends entirely on calibration set |
 | Compile time (OI) | 803 s at opt3 | ~7 s |
 | Throughput (OI) | 16.8 FPS | 42.1 FPS |
 | Marginal power (OI) | 1.42 W | 5.96 W |
-| Tuning sensitivity | **huge** (`optimize_level`) | minimal |
+| Tuning sensitivity | (`optimize_level`) | minimal |
 
 Start with BF16: it is the lower-risk path and requires no data. Move to INT8 when you have a
 calibration set and need the throughput.
@@ -119,7 +114,7 @@ cat /sys/class/accel/accel0/device/vbnv     # e.g. RyzenAI-npu6
 python3.12 --version                        # 3.12.x required
 ```
 
-BF16 requires **STX/KRK or newer**. Phoenix/Hawk Point are INT8-only for this flow.
+BF16 requires STX/KRK or newer. Phoenix/Hawk Point are INT8-only for this flow.
 
 ### Step 1 — XRT + NPU driver (needs root)
 
@@ -130,7 +125,7 @@ wget https://download.amd.com/opendownload/RyzenAI/Driver/RAI_1.8_Linux_NPU_XRT.
 unzip RAI_1.8_Linux_NPU_XRT.zip
 ```
 
-> **⚠ DOC BUG 1 — `curl` may not be installed.** The docs assume it. Ubuntu Server images
+> **DOC  — `curl` may not be installed.** The docs assume it. Ubuntu Server images
 > frequently ship only `wget`. If `curl` returns nothing with an empty status code, it does not
 > exist; it is not a network problem.
 
@@ -145,13 +140,13 @@ sudo apt install --fix-broken -y ./xrt_202620.2.25.37_24.04-amd64-npu.deb
 sudo apt install --fix-broken -y ./xrt_plugin.2.25.260102.56.release_24.04-amd64-amdxdna.deb
 ```
 
-> **⚠ DOC BUG 2 — boost version.** The docs say to install `libboost-filesystem1.74.0`. On
-> Ubuntu 24.04 the package actually depends on **1.83**, which `apt` resolves automatically.
+> **boost version.** The docs say to install `libboost-filesystem1.74.0`. On
+> Ubuntu 24.04 the package actually depends on 1.83, which `apt` resolves automatically.
 > The documented command fails because 1.74 does not exist on noble. Just skip it.
 
-> **⚠ DOC BUG 3 — the DKMS plugin replaces your running kernel module.** Its `postinst` runs
+> **the DKMS plugin replaces your running kernel module.** Its `postinst` runs
 > `rmmod amdxdna`, builds DKMS 0.15, and reloads. Ubuntu 24.04 with kernel 7.0 ships an
-> **in-tree amdxdna 0.7.0** which enumerates the NPU fine but **cannot execute** — commands
+> *in-tree amdxdna 0.7.0 which enumerates the NPU fine but cannot execute* — commands
 > abort with `ERT_CMD_STATE_ABORT` and the kernel logs
 > `xdna_mailbox: Message callback ret -22`. The DKMS module is mandatory, not optional.
 > It also installs newer firmware (`npu.dev.sbin`, 1.1.2.64 vs in-tree 1.0.0.63) — driver and
@@ -173,10 +168,10 @@ xrt-smi validate --run latency    # must PASS
 
 If `examine` lists the NPU but `validate` fails, you are still on the in-tree driver.
 
-### Step 2 — Ryzen AI 1.8.0 (no root needed)
+### Step 2 — Ryzen AI 1.8.0
 
-`ryzen_ai-1.8.0.tgz` (7.3 GB) is **EULA-gated** — download it through a browser from
-`account.amd.com`. There is no open-download URL.
+`ryzen_ai-1.8.0.tgz` (7.3 GB) — download it through a browser from
+`account.amd.com`. 
 
 ```bash
 mkdir -p ryzen_ai-1.8.0 && tar -xzf ryzen_ai-1.8.0.tgz -C ryzen_ai-1.8.0
@@ -186,12 +181,12 @@ cd ryzen_ai-1.8.0
 
 Takes about a minute. It creates the venv and installs `uv` inside it.
 
-> **⚠ DOC BUG 4 — ignore the `/usr/include/asm` warning.** The installer says to run
+> **ignore the `/usr/include/asm` warning.** The installer says to run
 > `sudo ln -s /usr/include/asm-generic /usr/include/asm`. **Do not do this on Ubuntu 24.04
 > amd64.** `/usr/include/x86_64-linux-gnu/asm` already exists and gcc finds it via the
 > multiarch include path (verify: `echo '#include <asm/types.h>' | gcc -E - >/dev/null`).
 > The suggested symlink would shadow architecture-specific headers with generic ones. It is
-> stale Ubuntu 22.04 advice and the installer prints it unconditionally.
+> Ubuntu 22.04 advice and the installer prints it unconditionally.
 
 ### Step 3 — The environment (order is load-bearing)
 
@@ -202,12 +197,12 @@ export LD_LIBRARY_PATH=/lib/x86_64-linux-gnu:${RYZEN_AI_INSTALLATION_PATH}/onnxr
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${RYZEN_AI_INSTALLATION_PATH}/lib/python3.12/site-packages/lnx64.o/tools/peano/lib
 ```
 
-> **⚠ DOC BUG 5 — the peano path is missing from the documentation and it is not optional.**
+> **the peano path is missing from the documentation and it is not optional.**
 > `libonnxruntime_vitisai_ep.so` needs `libpeano-lib.so.21.0git`, which ships in
 > `site-packages/lnx64.o/tools/peano/lib` — a directory the documented `LD_LIBRARY_PATH` does
-> not include. Without it the EP fails to load and **ONNX Runtime silently runs on CPU while
-> still printing `Test Finished` and exiting 0.**
-> It is a *transitive* dependency, so `objdump -p ... | grep NEEDED` will **not** show it —
+> not include. Without it the EP fails to load and ONNX Runtime silently runs on CPU while
+> still printing `Test Finished` and exiting 0.
+> It is a transitive dependency, so `objdump -p ... | grep NEEDED` will **not** show it —
 > `NEEDED` lists only direct dependencies. Only an actual load reveals the problem.
 
 > **Why `setup.sh` must come after `activate`:** the venv puts `voe/lib` early on
@@ -229,7 +224,7 @@ python -c "import onnxruntime as ort; print(ort.get_available_providers())"
 cd $RYZEN_AI_INSTALLATION_PATH/quicktest && python quicktest.py 2>&1 | tee quicktest.log
 ```
 
-> **⚠ DOC BUG 6 — `Test Finished` does not mean success.** Always check:
+> **`Test Finished` does not mean success.** Always check:
 > ```bash
 > grep "Actually running on NPU" quicktest.log   # must be >= 1
 > grep -cE "\[E:|\[F:" quicktest.log             # must be 0
@@ -274,10 +269,9 @@ session = ort.InferenceSession(
 )
 ```
 
-> **⚠ DOC BUG 7 — `optimize_level` defaults to 1 and that is 6× slower.** For OI,
+> **`optimize_level` defaults to 1 and that is 6× slower.** For our model,
 > level 1 gave 2.80 FPS and level 3 gave 17.05 FPS from the identical source model.
-> At level 1 the NPU was *slower than the CPU*. **Always sweep 1/2/3 before drawing any
-> conclusion about NPU performance.** The documented "default config" uses level 1.
+> At level 1 the NPU was *slower than the CPU*. The documented "default config" uses level 1.
 >
 > By contrast `preferred_data_storage` — which the docs highlight as the CNN-oriented knob —
 > made no measurable difference (352.37 vs 352.33 ms).
@@ -287,11 +281,11 @@ session = ort.InferenceSession(
 
 ### INT8
 
-Quantization must happen in a **separate virtualenv**:
+Quantization must happen in a separate virtualenv:
 
-> **⚠ DOC BUG 8 — `amd-quark` and `flexml` have irreconcilable dependencies.**
+> **`amd-quark` and `flexml` have irreconcilable dependencies.**
 > `amd-quark` requires `numpy>=2.0`; `flexml` (the BF16 compiler, part of Ryzen AI) pins
-> `numpy<=1.26.4`. Installing Quark into the Ryzen AI venv **breaks ONNX Runtime entirely**
+> `numpy<=1.26.4`. Installing Quark into the Ryzen AI venv breaks ONNX Runtime entirely
 > (`ImportError: import numpy failed`). Quantization is offline, so use a separate venv.
 > Recovery if you already did it: `pip uninstall -y amd-quark && pip install numpy==1.26.4`.
 
@@ -313,10 +307,8 @@ ModelQuantizer(config).quantize_model("model.onnx", "model_int8.onnx", calibrati
 ```
 
 Your `calibration_reader` needs `get_next()` returning `{input_name: ndarray}` and `rewind()`.
-**Use 100–1000 representative samples.** A single sample produces valid latency but
-meaningless accuracy.
 
-Running INT8 uses **different provider options** — no `config_file`:
+Running INT8 uses different provider options — no `config_file`:
 
 ```python
 provider_options=[{
@@ -328,7 +320,7 @@ provider_options=[{
 }]
 ```
 
-Do **not** set `xclbin` on STX/KRK — it is only for Phoenix/Hawk Point.
+Do not set `xclbin` on STX/KRK — it is only for Phoenix/Hawk Point.
 
 ---
 
@@ -336,7 +328,7 @@ Do **not** set `xclbin` on STX/KRK — it is only for Phoenix/Hawk Point.
 
 This is the step people skip, and it is the one that invalidates results.
 
-**Cold compile — partitioning markers** (needs `log_severity_level = 1`):
+Cold compile — partitioning markers (needs `log_severity_level = 1`):
 
 ```
 [Vitis AI EP] No. of Operators :
@@ -346,14 +338,13 @@ This is the step people skip, and it is the one that invalidates results.
 Actually running on NPU      1
 ```
 
-> **⚠ DOC BUG 9 — the BF16 target is labelled `VAIML`, not `NPU`.** The INT8 flow reports
-> `NPU` / `VITIS_EP_CPU`. Any checker that greps only for `NPU` will misread a fully-offloaded
-> BF16 model as fully-CPU.
+> **the BF16 target is labelled `VAIML`, not `NPU`.** The INT8 flow reports
+> `NPU` / `VITIS_EP_CPU`. 
 
-> **Markers only appear on a cold compile.** A warm-cache load compiles nothing and prints
+> Markers only appear on a cold compile. A warm-cache load compiles nothing and prints
 > nothing — absence of markers is not evidence of CPU fallback.
 
-**Warm cache — ask the driver instead:**
+Warm cache — ask the driver instead:
 
 ```bash
 xrt-smi examine --report aie-partitions
@@ -367,8 +358,6 @@ HW Contexts:
 
 Idle reads `No hardware contexts running on device`.
 
-> **⚠ DOC BUG 10 — the report is named `aie-partitions` (plural).** The documentation says
-> `aie-partition`, which errors with `No report generator found`.
 
 **Per-operator assignment report:**
 
@@ -401,21 +390,8 @@ not stable across boots.
 RAPL (`/sys/class/powercap/.../energy_uj`) is **root-only** (`-r--------`) and not usable
 unprivileged.
 
-Always capture an **idle baseline** — on this board idle PPT is 8.04 W, which is most of the
+Always capture an idle baseline — on this board idle PPT is 8.04 W, which is most of the
 reading during efficient NPU inference. Reporting total power without the baseline
 overstates inference cost substantially.
 
 ---
-
-## 7. Quick troubleshooting
-
-| Symptom | Cause | Fix |
-|---|---|---|
-| `Test Finished`, exit 0, but no NPU use | peano not on `LD_LIBRARY_PATH` | Doc Bug 5 |
-| `ERT_CMD_STATE_ABORT`, `mailbox ret -22` | in-tree driver 0.7.0 | install DKMS plugin |
-| "failed to open library `libxrt_core.so.2`" | old `libxrt_coreutil` from `voe/lib` wins | `source setup.sh` **after** `activate` |
-| `ImportError: import numpy failed` | `amd-quark` upgraded numpy | `pip install numpy==1.26.4` |
-| `No report generator found: aie-partition` | wrong report name | use `aie-partitions` |
-| NPU slower than CPU | `optimize_level 1` | set 3, recompile |
-| No partitioning markers in log | warm cache, or severity > 1 | `log_severity_level=1` + cold cache, or use `aie-partitions` |
-| `Permission denied` on `/dev/accel/accel0` | user not in `render`, no udev rule | add to `render` + re-login |
