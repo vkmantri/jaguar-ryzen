@@ -1,20 +1,12 @@
-# Ryzen AI 1.8 on Ubuntu 24.04 / Krackan NPU — every problem hit, and how it was solved
+# Ryzen AI 1.8 on Ubuntu 24.04 / Krackan NPU — Issues, and how it was solved
 
 **Platform:** Jaguar P122a devkit — Ryzen Embedded V4A46X, NPU `1022:17f0` rev `0x20`
 (`NPU Krackan 2`, npu6, aie2p 6×8), Ubuntu 24.04.4, kernel 7.0.0-28-generic
 **Software:** Ryzen AI 1.8.0 Linux, XRT 2.25.37, amdxdna DKMS 0.15
-**Date:** 2026-08-09
-**Outcome:** OI (fully convolutional, 576×960) runs fully on the NPU. INT8 42.1 FPS /
-23.2 ms, BF16 16.8 FPS / 58.0 ms, versus 5.7 FPS / 168.8 ms on 12 CPU threads.
 
-Twelve problems. Ten are documentation defects or packaging gaps; two are our own mistakes,
-included because they are easy to repeat.
 
 Format follows `github.com/kotetsuy/ryzenai_1_8`, which documented the same software on
 Ubuntu 26.04 / Strix Halo. Where our resolution differed, that is called out explicitly.
-
-**Scope.** This document covers the CNN workload (OI). Other workloads are documented
-separately and are not duplicated here:
 
 | Workload | Document |
 |---|---|
@@ -31,34 +23,13 @@ load. Use process isolation. Details in the voice agent document, Issue 1.
 
 ---
 
-## Comparison with the kotetsuy/ryzenai_1_8 report
-
-That report was written for Ubuntu 26.04 on Strix Halo (`17f0` rev 11), same kernel
-(7.0.0-28-generic). It independently confirms that the 24.04 packages work on kernel 7.0.
-
-| Their problem | Applies here? | Notes |
-|---|---|---|
-| P1 — Python 3.12 unavailable | **No** | 24.04 ships `python3.12`. Their `uv` workaround is a 26.04 issue. |
-| P2 — `libboost-filesystem1.74.0` missing | **Partly** | Same root cause (stale doc), different fix: on 24.04 `apt` resolves boost 1.83 automatically. No manual action. |
-| P3 — `xrt-smi` mmap `EAGAIN` (RLIMIT_MEMLOCK) | **No** | Their limit was 8192 KB. Ours is 4024488 KB (~3.8 GB) by default, far above the 64 MB XRT locks. No `fix_memlock.sh` needed. |
-| P4 — exec-stack ELF rejection | **No** | A 26.04 loader strictness issue with 24.04-built wheels. We are on 24.04/glibc 2.39; nothing to patch. |
-| P5 — silent CPU fallback (`libpeano`) | **Yes — identical** | Hit exactly. See Problem 1. |
-| P6 — `libxrt_core.so.2` core dump | **Latent** | Same version shadowing exists, but avoided by sourcing `setup.sh` *after* venv activate. See Problem 2. |
-| P7 — LLM EP `.so` path | **No** | OGA/LLM-specific; OI is a CNN. |
-| P8 — older models emit garbage | **No** | OGA/LLM-specific. |
-
-**New here, not in that report:** in-tree driver cannot execute (Problem 3), `optimize_level`
-default costs 6× (Problem 4), BF16 `VAIML` label (Problem 5), warm-cache verification gap
-(Problem 6), Quark/flexml numpy conflict (Problem 7), `aie-partitions` naming (Problem 9),
-`/usr/include/asm` bad advice (Problem 10), and the iGPU situation (§ iGPU).
-
 ---
 
 ## Problem 1 — `Test Finished`, exit code 0, and the NPU was never used
 
-**This was the most dangerous one.** Everything looks like success.
+Everything looks like success.
 
-**Symptom.** `quicktest.py` prints `Test Finished` and exits 0. Buried at the top of the log:
+**Symptom** `quicktest.py` prints `Test Finished` and exits 0. Buried at the top of the log:
 
 ```
 [E:onnxruntime:, provider_bridge_ort.cc:2353 Create] ... Failed to load library
@@ -77,10 +48,9 @@ completes normally.
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${RYZEN_AI_INSTALLATION_PATH}/lib/python3.12/site-packages/lnx64.o/tools/peano/lib
 ```
 
-**Trap within the trap.** We initially ruled this out by checking
-`objdump -p libonnxruntime_vitisai_ep.so | grep NEEDED | grep peano` on all four copies of the
-library — no match, so it looked inapplicable. **That check is invalid: `NEEDED` lists only
-direct dependencies, and libpeano is transitive.** Only an actual load reveals it.
+checking `objdump -p libonnxruntime_vitisai_ep.so | grep NEEDED | grep peano` on all four copies of the
+library — no match, so it looked inapplicable. That check is invalid: `NEEDED` lists only
+direct dependencies, and libpeano is transitive. Only an actual load reveals it.
 
 **How we made it un-repeatable.** We do not use exit codes as a success signal. Every VitisAI
 run captures the EP's native output at file-descriptor level and refuses to report numbers
@@ -105,9 +75,9 @@ The file exists, is readable, and `ldd` resolves it.
 **Cause.** The venv's `activate` puts `voe/lib` early on `LD_LIBRARY_PATH`. It ships
 `libxrt_coreutil.so.2.19.184`, which lacks `xrt_core::smi::get_option_options` present in the
 system 2.25.37. The old library wins, so the newer `libxrt_core.so.2` fails to `dlopen` with an
-**undefined-symbol** error that is *reported* as a file-open failure.
+undefined-symbol error that is *reported* as a file-open failure.
 
-**Fix.** Source XRT's setup **after** activating the venv — it prepends `/opt/xilinx/xrt/lib`:
+**Fix.** Source XRT's setup after activating the venv — it prepends `/opt/xilinx/xrt/lib`:
 
 ```bash
 source $RYZEN_AI_INSTALLATION_PATH/bin/activate
@@ -116,20 +86,17 @@ source /opt/xilinx/xrt/setup.sh
 
 Verified ordering: `/opt/xilinx/xrt/lib` at position 3, `voe/lib` at position 6.
 
-**Lesson.** For any "cannot open library", use `LD_DEBUG=libs` to see which file was actually
+ For any "cannot open library", use `LD_DEBUG=libs` to see which file was actually
 chosen. `ldd` resolves with its own environment and will mislead you.
 
 ---
 
 ## Problem 3 — the kernel's in-tree `amdxdna` enumerates the NPU but cannot execute
 
-**Not in the kotetsuy report.** Ubuntu 24.04 with kernel 7.0 ships an in-tree
-`amdxdna_accel_driver 0.7.0`, so the NPU appears healthy before you install anything.
-
 **Symptom.** With XRT 2.25.37 user space on the in-tree driver:
 
-- `xrt-smi examine` **works** — device listed, firmware 1.0.0.63 reported
-- `xrt-smi validate --run all` — **all tests fail** with `ERT_CMD_STATE_ABORT`
+- `xrt-smi examine` works — device listed, firmware 1.0.0.63 reported
+- `xrt-smi validate --run all` — all tests fail with `ERT_CMD_STATE_ABORT`
 - kernel log:
   ```
   amdxdna 0000:03:00.1: xdna_mailbox.78: Message callback ret -22
@@ -141,29 +108,17 @@ chosen. `ldd` resolves with its own environment and will mislead you.
 **Cause.** Two coupled version mismatches. In-tree driver is 0.7.0; the DKMS package is 0.15.
 Both expose the *same five ioctls* (verified with `nm`), so it is not a missing-ioctl problem.
 The in-tree driver also loads production firmware `npu.sbin` (1.0.0.63) while the DKMS package
-ships `npu.dev.sbin` (1.1.2.64). **Driver and firmware are versioned together.**
+ships `npu.dev.sbin` (1.1.2.64). Driver and firmware are versioned together.
 
 **Fix.** Install `xrt_plugin...amdxdna.deb`. Its `postinst` runs `rmmod amdxdna`, builds DKMS
 0.15, and reloads. After that all three validate tests pass:
 GEMM 5.7 TOPS, latency 53.0 µs, throughput 82,310 op/s.
 
-**Before doing this on a board you cannot re-image**, we verified the blast radius:
-
-- in-tree module lives in `kernel/drivers/accel/amdxdna/`, DKMS installs to `updates/dkms/` —
-  the in-tree binary is never overwritten
-- `amdxdna` is **absent from the initramfs**, so a broken module cannot block boot
-- nothing depends on it (`lsmod` shows `used_by 0`); display is `amdgpu`, independent
-- no `modules-load.d` entry — loaded on PCI match only, so `modprobe.blacklist=amdxdna` at the
-  GRUB line is a working escape hatch
-
-**Rollback is not automatic.** DKMS + `depmod` make the new module persistent; a reboot does
-**not** revert. Removing `xrt_plugin-amdxdna` triggers a `prerm` that unloads it, deletes the
-udev rule and runs `dkms remove --all`.
 
 > `dkms.conf` declares `DEST_MODULE_LOCATION=/kernel/extras` but DKMS actually installs to
 > `updates/dkms/`. Cleanup scripts targeting the declared path silently do nothing.
 
-**Kernel is tainted afterwards** — the module is signed with an unenrolled MOK
+Kernel is tainted afterwards — the module is signed with an unenrolled MOK
 (`module verification failed: signature and/or required key missing`). Harmless with Secure
 Boot off; with Secure Boot on you must enrol the key or the NPU driver will not load.
 
@@ -171,15 +126,13 @@ Boot off; with Secure Boot on you must enrol the key or the NPU driver will not 
 
 ## Problem 4 — the default `optimize_level` makes the NPU slower than the CPU
 
-**Not in the kotetsuy report, and the highest-impact finding here.**
-
-**Symptom.** OI compiled for BF16 with the documented default config ran at **2.80 FPS /
-352 ms**, against **5.69 FPS / 169 ms** on CPU. The NPU looked 2× slower.
+**Symptom.** Our model compiled for BF16 with the documented default config ran at 2.80 FPS /
+352 ms, against 5.69 FPS / 169 ms on CPU. The NPU looked 2× slower.
 
 **Cause.** The documentation's "default configuration file for compiling BF16 models" uses
 `"optimize_level": 1`. Valid values are 1, 2, 3.
 
-**Fix.** `"optimize_level": 3` → **17.05 FPS / 57.63 ms**, a **6.1× speedup** from an identical
+**Fix.** `"optimize_level": 3` → 17.05 FPS / 57.63 ms, a 6.1× speedup from an identical
 source model, turning "2× slower than CPU" into "3× faster".
 
 | BF16 config | FPS | p50 | Compile |
@@ -190,57 +143,24 @@ source model, turning "2× slower than CPU" into "3× faster".
 
 Two secondary findings:
 
-- **`preferred_data_storage` made no measurable difference** (352.37 vs 352.33 ms) despite the
+- `preferred_data_storage` made no measurable difference (352.37 vs 352.33 ms) despite the
   docs presenting `vectorized` as the CNN-oriented option. Two independent 7-minute compiles
   produced latency identical to 0.01 %.
-- **INT8 has almost no sensitivity to the same knob**: `opt_level` 0 → 3 moved 40.47 → 41.84
+- **INT8** has almost no sensitivity to the same knob: `opt_level` 0 → 3 moved 40.47 → 41.84
   FPS (+3 %). Tuning conclusions do not transfer between precisions.
 
-**How this was caught.** We reported "the NPU is 2× slower than the CPU" from default-config
-data. The finding was challenged against AMD's published ResNet BF16 example, which prompted
-the sweep. **Never characterise hardware from default compiler settings.**
-
 ---
 
-## Problem 5 — the BF16 flow reports its target as `VAIML`, not `NPU`
-
-**Not in the kotetsuy report** (they ran quicktest, which uses the INT8-style label).
-
-**Symptom.** A fully-offloaded BF16 model reports:
-
-```
-[Vitis AI EP] No. of Operators :
- VAIML   122
-[Vitis AI EP] No. of Subgraphs :
-   NPU     1
-Actually running on NPU      1
-```
-
-Note: `VAIML` for operators, `NPU` for subgraphs, and **no `VITIS_EP_CPU` line at all**.
-
-**Cause.** The BF16 `vaiml_partition` path labels operators `VAIML`; the INT8 path uses `NPU` /
-`VITIS_EP_CPU`.
-
-**Impact.** Our verifier counted anything not named `NPU` as CPU, so it reported a
-**fully-NPU model as 122 CPU operators** and produced a self-contradictory verdict. Inverted
-in the most misleading direction: a *successful* run looked like a CPU fallback.
-
-**Fix.** Treat `{NPU, VAIML}` as NPU targets; treat labels containing `CPU` as CPU; route
-anything unrecognised to a separate bucket that is **not** counted as NPU, so a future label
-fails closed rather than being silently miscounted.
-
----
-
-## Problem 6 — partitioning markers only appear on a cold compile
+## Problem 5 — partitioning markers only appear on a cold compile
 
 **Symptom.** A verified-working configuration reports "no VitisAI EP partitioning markers
 found" when re-run. Session creation drops from 423 s to 0.5 s.
 
 **Cause.** Two compounding issues:
 
-1. The markers are logged at **INFO**; ONNX Runtime defaults to Warning (2). Without
+1. The markers are logged at INFO; ONNX Runtime defaults to Warning (2). Without
    `session_options.log_severity_level = 1` the log contains only `[W:onnxruntime` lines.
-2. Even with INFO enabled, a **warm cache compiles nothing and therefore logs nothing.**
+2. Even with INFO enabled, a warm cache compiles nothing and therefore logs nothing.
 
 **Impact.** Log-based verification cannot work for repeat runs — precisely the runs you use for
 benchmarking. The temptation is to disable the check, which is how silent CPU fallback gets
@@ -262,9 +182,7 @@ falls back to matching its own PID against the driver's active hardware contexts
 
 ---
 
-## Problem 7 — installing AMD Quark breaks ONNX Runtime completely
-
-**Our own mistake, and easy to repeat.**
+## Problem 6 (More of a Lesson Learned) — installing AMD Quark breaks ONNX Runtime completely
 
 **Symptom.** After `pip install amd-quark` in the Ryzen AI venv, everything stops:
 
@@ -281,12 +199,6 @@ amd-quark  requires numpy>=2.0
 
 Quark upgraded numpy to 2.5.2 and ONNX Runtime's compiled extension could no longer load.
 
-**Fix (recovery).**
-
-```bash
-pip uninstall -y amd-quark
-pip install numpy==1.26.4
-```
 
 Verify with a real inference, not just an import — BF16 returned to 59.84 ms.
 
@@ -305,7 +217,7 @@ python3.12 -m venv /opt/quark-venv
 
 ---
 
-## Problem 8 — INT8 leaves two operators on the CPU (this is fine)
+## Problem7 — INT8 leaves two operators on the CPU (this is fine)
 
 **Symptom.** INT8 reports `NPU 484 / VITIS_EP_CPU 2` where BF16 reported zero CPU operators.
 
@@ -326,28 +238,9 @@ export XLNX_ONNX_EP_REPORT_FILE=vitisai_ep_report.json   # plus enable_cache_fil
 entry, int8 output dequantised on exit. Every interior operator is on the NPU. Expected, not a
 partitioning failure.
 
-Also note the node count: **486 for INT8 vs 127 for the fp32/BF16 graph**, because QDQ pairs
-inflate the quantized graph. Node counts are not comparable across precisions.
-
 ---
 
-## Problem 9 — `xrt-smi` report name is wrong in the documentation
-
-**Symptom.**
-
-```
-$ xrt-smi examine --report aie-partition
-ERROR: No report generator found for report: 'aie-partition'
-```
-
-**Cause.** Documentation says `aie-partition`; the tool implements **`aie-partitions`**
-(plural). Available reports: `aie-partitions`, `all`, `host`, `platform`.
-
-Also: `-f JSON` requires `-o <file>`; it will not write JSON to stdout.
-
----
-
-## Problem 10 — the installer's `/usr/include/asm` advice is wrong on 24.04
+## Problem 7 — the installer's `/usr/include/asm` advice is wrong on 24.04
 
 **Symptom.** `install_ryzen_ai.sh` ends with:
 
@@ -356,7 +249,7 @@ Warning: /usr/include/asm does not exist.
   sudo ln -s /usr/include/asm-generic /usr/include/asm
 ```
 
-**Do not follow this on Ubuntu 24.04 amd64.**
+Do not follow this on Ubuntu 24.04 amd64.
 
 **Cause.** Stale Ubuntu 22.04 advice, printed unconditionally. On 24.04 amd64,
 `/usr/include/x86_64-linux-gnu/asm` already exists and gcc finds it through the multiarch
@@ -369,30 +262,12 @@ printf '#include <asm/types.h>\nint main(void){return 0;}\n' > /tmp/t.c && gcc -
 echo | gcc -E -Wp,-v - 2>&1 | grep x86_64-linux-gnu
 ```
 
-**Why it is harmful:** symlinking `/usr/include/asm` → `asm-generic` shadows
+symlinking `/usr/include/asm` → `asm-generic` shadows
 architecture-specific headers with generic ones. The install is fine without it.
 
 ---
 
-## Problem 11 — `curl` is not installed; it is not a network problem
-
-**Symptom.** `curl` returns empty output *and* an empty HTTP status code, which reads like a
-blocked connection.
-
-**Cause.** `curl` is simply not installed on this image. `wget` is.
-
-```bash
-$ command -v curl wget
-/usr/bin/wget
-```
-
-Worth stating because the failure mode mimics a proxy/firewall block and sends you debugging
-the wrong thing. Related: `account.amd.com` resolves **IPv6-only** from some networks, which
-*is* a genuine reachability issue on IPv4-only setups.
-
----
-
-## Problem 12 — device node permissions
+## Problem 8 — device node permissions
 
 **Symptom.** `PermissionError: [Errno 13]` opening `/dev/accel/accel0`.
 
@@ -407,29 +282,26 @@ grant access.
 KERNEL=="accel*",DRIVERS=="amdxdna",GROUP="render",MODE="0660"
 ```
 
-plus `sudo usermod -aG render $USER` and a **full logout/login** (a new terminal in an existing
+plus `sudo usermod -aG render $USER` and a full logout/login (a new terminal in an existing
 session inherits the old groups). `sg render -c '...'` works for a one-shot test without
 logging out.
 
 ---
 
-## iGPU: why there is no iGPU result
+## iGPU
 
-The evaluation was asked to compare NPU, CPU and iGPU in FP32 and INT8. **The iGPU comparison
-cannot be produced on this platform.** Three independent confirmations:
-
-**1. AMD's own Linux documentation rules it out.**
+1. AMD's own Linux documentation rules it out
 
 > "RyzenAI-SW repo hosts a diverse set of examples with both NPU and iGPU Execution Provider.
-> **However, Linux currently supports NPU only flow.**"
+> However, Linux currently supports NPU only flow.
 > — Ryzen AI Linux Installation Instructions
 
-**2. The referenced example requires DirectML, which is Windows-only.**
+2. The referenced example requires DirectML, which is Windows-only.
 `RyzenAI-SW/CNN-examples/iGPU/getting_started` states it uses "Olive to convert the model …
-and DirectML execution provider to run the model on the iGPU". DirectML is a **DirectX 12**
+and DirectML execution provider to run the model on the iGPU". DirectML is a DirectX 12
 API. There is no Linux implementation.
 
-**3. This system has no GPU execution provider available.**
+3. This system has no GPU execution provider available.
 
 | Check | Result |
 |---|---|
@@ -443,35 +315,9 @@ No DirectML, no ROCm, no MIGraphX, no CUDA. The iGPU is functional for graphics 
 the desktop and reports 8.04 W idle through `amdgpu` hwmon — but there is no ONNX inference
 path to it.
 
-### What it would take
-
-| Option | Feasibility |
-|---|---|
-| **Windows + DirectML** | Works today; this is what AMD's example targets. The realistic route for an FP32/INT8 iGPU comparison. |
-| **Linux + ROCm + MIGraphX EP** | Requires a ROCm install and an ONNX Runtime built with the ROCm or MIGraphX EP. Krackan's `gfx` target must first be confirmed against the ROCm support matrix — integrated RDNA parts are frequently outside official support. Substantial effort with a real chance of not working. |
-| **Vulkan / OpenCL runtimes** | Would not be an ONNX Runtime EP comparison, so results would not be methodologically comparable to the NPU and CPU numbers. |
-
-**Recommendation.** If the iGPU comparison is required, run it on Windows with DirectML on the
-same silicon. Do not spend time on a Linux ROCm path without first confirming Krackan `gfx`
-support.
-
 ---
 
-## Two of our own mistakes worth recording
-
-**Benchmarking with 3 iterations.** An early CPU baseline of "6.77 FPS" came from a 3-iteration
-run. Re-measured properly over 100 iterations it is 5.67 FPS, and over a 30 s window 5.69 FPS.
-The bad figure was quoted in an interim comparison before being caught.
-
-**Concluding hardware performance from default compiler settings.** See Problem 4. The
-conclusion "the NPU is 2× slower than the CPU" was reported from `optimize_level 1` data and
-was wrong by a factor of six.
-
----
-
-## Verification checklist
-
-Before trusting any NPU number:
+## Items to check for NPU execution:
 
 ```bash
 # 1. Driver is the DKMS build, not in-tree
